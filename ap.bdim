@@ -1,0 +1,14 @@
+1 0 0 3 #Take input a
+1 0 0 4 #Take input d
+1 0 0 5 #Take input n
+12 2 2 0 #Locn 0 is 0
+11 2 2 1 #Locn 1 is 1
+6 1 1 2 #Locn 2 is 2
+7 5 1 6 #Locn 6 is n-1
+8 6 4 7 #Locn 7 is n-1 *d
+8 2 3 8 #Locn 8 is 2*a
+6 7 8 9 #Locn 9 is 2*a + n-1 *d
+8 5 9 10 #Locn 10 is n*(2*a + n-1 *d)
+9 10 2 11 #Locn 11 is n/2*(2*a + n-1 *d)
+15 11 0 0 
+0 0 0 0 

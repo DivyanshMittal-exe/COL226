@@ -1,0 +1,21 @@
+1 0 0 2 #Take input
+12 2 2 0 #Locn 0 is 0
+11 2 2 1 #Locn 1 is 1
+2 0 0 3
+2 1 0 4
+2 1 0 5
+2 1 0 6
+2 0 0 7
+13 7 0 15
+2 5 0 3 #mem3 = mem5
+6 5 4 5 #mem5 = mem3 + mem4
+2 4 0 3 #mem4 = mem3
+6 6 1 6 #mem6++
+12 2 6 7
+14 0 0 8
+15 5 0 0 
+0 0 0 0
+
+###Needs work for n + edge case 0 and 1
+
+
