@@ -1,5 +1,4 @@
-
-val maxMemSize = 64;
+val maxMemSize = 64
 type com = int*int*int*int;
 exception invalidOP;
 exception notNumber;
@@ -70,12 +69,12 @@ fun read file =
 
 fun interpret file = 
     let
-        
+        val mem = Array.array(maxMemSize,0)
         val code = read file
         fun eval (loc) =
           let
             val (opc,opd1,opd2,tgt) = Vector.sub(code,loc)
-            (* val deb = debugArr(mem,0) *)
+            val deb = debugArr(mem,0)
            
           in
             if (opc = 0) then 
