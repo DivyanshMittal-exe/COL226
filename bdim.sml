@@ -3,7 +3,20 @@ val maxMemSize = 64;
 type com = int*int*int*int;
 exception invalidOP;
 exception notNumber;
+val mem = Array.array(maxMemSize,0)
 
+
+fun debugArr (ar, ind:int) = 
+      let 
+        val a = Array.sub(ar,ind)
+        (* val nInd = ind + 1 *)
+        val t = print(Int.toString(a))
+      in 
+        if (ind + 1 < Array.length (ar)) then
+          debugArr(ar,ind + 1)
+        else 
+          print("\n")
+      end
 
 fun read file =  
   let
@@ -57,15 +70,16 @@ fun read file =
 
 fun interpret file = 
     let
-        val mem = Array.array(maxMemSize,0)
+        
         val code = read file
         fun eval (loc) =
           let
             val (opc,opd1,opd2,tgt) = Vector.sub(code,loc)
+            (* val deb = debugArr(mem,0) *)
            
           in
             if (opc = 0) then 
-              print("Program Halting")
+              print("Program Halting\n")
             
             else if (opc = 1) then 
               let
@@ -143,7 +157,9 @@ fun interpret file =
 
             else if (opc = 6) then
             let
-                val up = Array.update(mem,tgt,opd1+opd2)
+                val a = Array.sub(mem,opd1)
+                val b = Array.sub(mem,opd2)
+                val up = Array.update(mem,tgt,a+b)
               in
                 eval(loc+1)
               end
@@ -151,36 +167,47 @@ fun interpret file =
 
             else if (opc = 7) then
             let
-                val up = Array.update(mem,tgt,opd1-opd2)
+                val a = Array.sub(mem,opd1)
+                val b = Array.sub(mem,opd2)
+                val up = Array.update(mem,tgt,a-b)
               in
                 eval(loc+1)
               end
 
             else if (opc = 8) then
             let
-                val up = Array.update(mem,tgt,opd1*opd2)
+                val a = Array.sub(mem,opd1)
+                val b = Array.sub(mem,opd2)
+                val up = Array.update(mem,tgt,a*b)
               in
                 eval(loc+1)
               end
 
             else if (opc = 9) then
             let
-                val up = Array.update(mem,tgt,opd1 div opd2)
+                val a = Array.sub(mem,opd1)
+                val b = Array.sub(mem,opd2)
+                val up = Array.update(mem,tgt,a div b)
               in
                 eval(loc+1)
               end
 
             else if (opc = 10) then
             let
-                val up = Array.update(mem,tgt,opd1 mod opd2)
+                val a = Array.sub(mem,opd1)
+                val b = Array.sub(mem,opd2)
+                val up = Array.update(mem,tgt,a mod b)
               in
                 eval(loc+1)
               end
             
             else if (opc = 11) then
-            let
-                fun f a = 
-                  if opd1 > opd2 then
+            let 
+                val a = Array.sub(mem,opd1)
+                val b = Array.sub(mem,opd2)
+                
+                fun f th = 
+                  if a = b then
                      1 
                   else  0
                 val upd = f 0
@@ -191,9 +218,10 @@ fun interpret file =
 
             else if (opc = 12) then
             let
-                
-                fun f a = 
-                  if opd1 > opd2 then
+                val a = Array.sub(mem,opd1)
+                val b = Array.sub(mem,opd2) 
+                fun f th = 
+                  if a > b then
                      1 
                   else 0
                 val upd = f 0
@@ -225,6 +253,14 @@ fun interpret file =
               in 
                 eval(loc+1)
               end
+            
+            else if (opc = 16) then
+              let 
+                val up = Array.update(mem,tgt,opd1)
+              in 
+                eval(loc+1)
+              end
+              
             else            
              raise invalidOP
           end
