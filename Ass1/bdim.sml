@@ -1,6 +1,9 @@
 val maxMemSize = 64
 type com = int*int*int*int;
 exception invalidOP;
+exception divisionBy0;
+exception modBy0;
+exception syntaxError;
 exception notNumber;
 val mem = Array.array(maxMemSize,0)
 
@@ -9,7 +12,7 @@ fun debugArr (ar, ind:int) =
       let 
         val a = Array.sub(ar,ind)
         (* val nInd = ind + 1 *)
-        val t = print(Int.toString(a))
+        val t = print(Int.toString(a)^" ")
       in 
         if (ind + 1 < Array.length (ar)) then
           debugArr(ar,ind + 1)
@@ -33,6 +36,7 @@ fun read file =
                   SOME i => i
                 | NONE   => 0
               val h = map getInt i 
+              val k = if List.length(h) = 4 then 1 else raise syntaxError 
               val [a,b,c,d] = h
             in
               (a,b,c,d)
@@ -74,7 +78,7 @@ fun interpret file =
         fun eval (loc) =
           let
             val (opc,opd1,opd2,tgt) = Vector.sub(code,loc)
-            val deb = debugArr(mem,0)
+            (* val deb = debugArr(mem,0) *)
            
           in
             if (opc = 0) then 
@@ -120,8 +124,8 @@ fun interpret file =
                 val a = Array.sub(mem,opd1)
                 val wa = Word.fromInt(a)
                 val wb= Word.notb(wa)
-                val wc = Word.toInt(wb)
-                val up = Array.update(mem,tgt,wc)
+                val c = Word.toInt(wb)
+                val up = Array.update(mem,tgt,c)
               in
                 eval(loc+1)
               end
@@ -133,7 +137,7 @@ fun interpret file =
                 val a = Array.sub(mem,opd1)
                 val b = Array.sub(mem,opd2)
                 val wa = Word.fromInt(a)
-                val wb = Word.fromInt(a)
+                val wb = Word.fromInt(b)
                 val wc= Word.orb(wa,wb)
                 val wd = Word.toInt(wc)
                 val up = Array.update(mem,tgt,wd)
@@ -146,7 +150,7 @@ fun interpret file =
                 val a = Array.sub(mem,opd1)
                 val b = Array.sub(mem,opd2)
                 val wa = Word.fromInt(a)
-                val wb = Word.fromInt(a)
+                val wb = Word.fromInt(b)
                 val wc= Word.andb(wa,wb)
                 val wd = Word.toInt(wc)
                 val up = Array.update(mem,tgt,wd)
@@ -186,18 +190,26 @@ fun interpret file =
             let
                 val a = Array.sub(mem,opd1)
                 val b = Array.sub(mem,opd2)
+                val k = if b = 0 then 0 else 1
                 val up = Array.update(mem,tgt,a div b)
               in
-                eval(loc+1)
+                if k = 1 then
+                  eval(loc+1)
+                else 
+                  raise divisionBy0
               end
 
             else if (opc = 10) then
             let
                 val a = Array.sub(mem,opd1)
                 val b = Array.sub(mem,opd2)
+                val k = if b = 0 then 0 else 1
                 val up = Array.update(mem,tgt,a mod b)
               in
-                eval(loc+1)
+                if k = 1 then
+                  eval(loc+1)
+                else 
+                  raise modBy0
               end
             
             else if (opc = 11) then
@@ -205,12 +217,12 @@ fun interpret file =
                 val a = Array.sub(mem,opd1)
                 val b = Array.sub(mem,opd2)
                 
-                fun f th = 
+                val f = 
                   if a = b then
                      1 
                   else  0
-                val upd = f 0
-                val up = Array.update(mem,tgt,upd)
+              
+                val up = Array.update(mem,tgt,f)
               in
                 eval(loc+1)
               end
@@ -219,12 +231,12 @@ fun interpret file =
             let
                 val a = Array.sub(mem,opd1)
                 val b = Array.sub(mem,opd2) 
-                fun f th = 
+                val f= 
                   if a > b then
                      1 
                   else 0
-                val upd = f 0
-                val up = Array.update(mem,tgt,upd)
+                
+                val up = Array.update(mem,tgt,f)
               in
                 eval(loc+1)
               end
@@ -248,8 +260,8 @@ fun interpret file =
             else if (opc = 15) then
               let 
                 val out = Array.sub(mem,opd1)
-                val up = print(Int.toString(out) ^"\n")
               in 
+                print(Int.toString(out) ^"\n");
                 eval(loc+1)
               end
             
