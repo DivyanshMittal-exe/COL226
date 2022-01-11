@@ -1,5 +1,5 @@
-val maxMemSize = 64
-type com = int*int*int*int;
+(* All code here is original and written by Divyansh Mittal 2020CS10342 *)
+
 exception invalid_OP_code;
 exception divisionByZeroError;
 exception modByZeroError;
@@ -7,8 +7,11 @@ exception syntaxError;
 exception notNumber;
 exception outOfBoundMemoryAccess;
 exception outOfBoundCodeAccess;
-val mem = Array.array(maxMemSize,0)
 
+
+val maxMemSize = 64
+type com = int*int*int*int;
+val mem = Array.array(maxMemSize,0)
 
 
 (* A function I used to debug and print memory  *)
@@ -33,21 +36,7 @@ fun chomp1 s =
     in  implode (rev (nibble charlist))
     end
 
-(* Takes in string and returns tuple of code *)
-fun getCodeTuple l =
-    let
-      val i = String.tokens(fn x => x = #"\n" orelse x = #"(" orelse x = #")" orelse x = #",") l
-      fun getInt i = 
-        case Int.fromString(i) of 
-          SOME i => i
-        | NONE   => 0
-      val h = map getInt i 
-      val k = if List.length(h) = 4 then 1 else raise syntaxError 
-      val [a,b,c,d] = h
-    in
-      (a,b,c,d)
-    end
-            
+
 (* Converts input stream to list of code strings *)
 fun getline dat = 
     case TextIO.inputLine dat of 
@@ -60,8 +49,26 @@ fun getInt i =
       SOME i => i
     | NONE   => raise notNumber
 
+
+
+(* Takes in string and returns tuple of code *)
+fun getCodeTuple l =
+    let
+      val i = String.tokens(fn x => x = #"\n" orelse x = #"(" orelse x = #")" orelse x = #",") l
+      val h = map getInt i 
+      val l = List.length(h) 
+      val k = if l = 4 then 1 else raise syntaxError
+      val [a,b,c,d] = h
+    in
+      (a,b,c,d)
+    end
+    
 (* Reads file *)
-fun read file = Vector.fromList(map getCodeTuple (getline (TextIO.openIn file)) )
+fun read file = 
+      Vector.fromList(map getCodeTuple (getline (TextIO.openIn file)))
+      
+
+
 
 (* Main function to interpret *)
 fun interpret file = 
@@ -213,7 +220,16 @@ fun interpret file =
               else            
                   raise invalid_OP_code
           end
+
+          handle invalid_OP_code => print("Error: Invalid op code on line "^Int.toString(loc)^"\n")
+                    | divisionByZeroError => print("Error: Division by zero attempted on line "^Int.toString(loc)^"\n")
+                    | modByZeroError => print("Error: Modulus by zero attempted on line "^Int.toString(loc)^"\n")
+                    | outOfBoundMemoryAccess => print("Error:Invalid memory access attempted on line "^Int.toString(loc)^"\n")
+                    | outOfBoundCodeAccess => print("Error:Invalid code access attempted on line "^Int.toString(loc)^"\n")
+
     in 
         (* To start from eval 0 *)
         eval (0)
     end
+    handle syntaxError => print("Invalid Syntax \n")
+    handle notNumber => print("Invalid Syntax: Syntax not integer\n")
