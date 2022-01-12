@@ -7,7 +7,7 @@ exception syntaxError;
 exception notNumber;
 exception outOfBoundMemoryAccess;
 exception outOfBoundCodeAccess;
-
+exception Overflow;
 
 val maxMemSize = 64
 type com = int*int*int*int;
@@ -203,7 +203,7 @@ fun interpret file =
                     eval(loc+1))
 
               else if (opc = 13) then
-                  if (a = 1) then
+                  if (a <> 0) then
                     eval(tgt)
                   else eval(loc+1)
 
@@ -222,14 +222,15 @@ fun interpret file =
           end
 
           handle invalid_OP_code => print("Error: Invalid op code on line "^Int.toString(loc)^"\n")
-                    | divisionByZeroError => print("Error: Division by zero attempted on line "^Int.toString(loc)^"\n")
-                    | modByZeroError => print("Error: Modulus by zero attempted on line "^Int.toString(loc)^"\n")
-                    | outOfBoundMemoryAccess => print("Error:Invalid memory access attempted on line "^Int.toString(loc)^"\n")
-                    | outOfBoundCodeAccess => print("Error:Invalid code access attempted on line "^Int.toString(loc)^"\n")
+              | divisionByZeroError => print("Error: Division by zero attempted on line "^Int.toString(loc)^"\n")
+              | modByZeroError => print("Error: Modulus by zero attempted on line "^Int.toString(loc)^"\n")
+              | outOfBoundMemoryAccess => print("Error:Invalid memory access attempted on line "^Int.toString(loc)^"\n")
+              | outOfBoundCodeAccess => print("Error:Invalid code access attempted on line "^Int.toString(loc)^"\n")
 
     in 
         (* To start from eval 0 *)
         eval (0)
     end
     handle syntaxError => print("Invalid Syntax \n")
-    handle notNumber => print("Invalid Syntax: Syntax not integer\n")
+        |  notNumber => print("Invalid Syntax: Syntax not integer\n")
+        |  overflow => print("Value too large: Overflow error \n")
