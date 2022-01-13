@@ -249,4 +249,4 @@ fun interpret file =
     end
     handle syntaxError => print("Invalid Syntax \n")
         |  notNumber => print("Invalid Syntax: Syntax not integer\n")
-        |  overflow => print("Overlow error")
+        |  overflow => print("Overlow error\n")
