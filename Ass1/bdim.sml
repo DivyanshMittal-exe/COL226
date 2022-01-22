@@ -50,26 +50,26 @@ fun getInt i =
       SOME i => i
     | NONE   => raise notNumber
 
+fun getText dat = 
+    case TextIO.inputLine dat of 
+      SOME l => l
+    | NONE   => "" 
 
+fun  listToTuple (a::b::c::d::nil) = (a,b,c,d)
+   | listToTuple x = raise syntaxError
 
 (* Takes in string and returns tuple of code *)
 fun getCodeTuple l =
     let
       val i = String.tokens(fn x => x = #"\n" orelse x = #"(" orelse x = #")" orelse x = #",") l
-      val h = map getInt i 
-      val l = List.length(h) 
-      val k = if l = 4 then 1 else raise syntaxError
-      val [a,b,c,d] = h
     in
-      (a,b,c,d)
+      listToTuple (map getInt i)
     end
     
 (* Reads file *)
 fun read file = 
       Vector.fromList(map getCodeTuple (getline (TextIO.openIn file)))
       
-
-
 
 (* Main function to interpret *)
 fun interpret file = 
@@ -123,9 +123,7 @@ fun interpret file =
               else if (opc = 1) then 
                   let
                       val p = print("Input: ")
-                      val SOME inp = TextIO.inputLine TextIO.stdIn
-
-                      val numb = getInt (chomp1 inp)
+                      val numb = getInt (chomp1 (getText (TextIO.stdIn)))
                     in
                       (Array.update(mem,tgt,numb);
                       eval(loc+1))
