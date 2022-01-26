@@ -4,11 +4,15 @@ ibt(node(N,L,R)):- integer(N),ibt(L),ibt(R).
 
 size(empty,0).
 size(node(_,L,R),Size):-
-    Size = 1 + size(L) + size(R).
+    size(L,LeftS),
+    size(R,RightS),
+    Size is 1 + LeftS + RightS.
 
 height(empty,0).
 height(node(_,L,R),Height):-
-    Height = 1 + max(height(L),height(R)).
+    height(L,LeftH),
+    height(R,RightH),
+    Height is 1 + max(LeftH,RightH).
 
 
 preorder(empty,[]).
@@ -32,6 +36,7 @@ postorder(node(N,L,R),List):-
     append(LeftList,RR,List).
 
 
+% Essentially for tail recursion, we need to have a lost of Binary Trees to have tail recursion. It is similar to iterative graph search algorithms.
 trPreorder(BT,L):-
     trPreorderHelper([BT],[],L).
 trPreorderHelper([],X,X).
@@ -65,6 +70,7 @@ trPostorderHelper([node(N,L,R)|BT_List], Accum,Result):-
     trPostorderHelper([R,L|BT_List],[N|Accum],Result).
 
 
+
 eulerTour(empty,[]).
 eulerTour(node(N,L,R), List):-
     eulerTour(L,LeftList),
@@ -73,17 +79,29 @@ eulerTour(node(N,L,R), List):-
     append(MostList,[N],List).
 
 
+remo([_], []).
+remo([X|L], [X|Y]) :- 
+    remo(L, Y).
 
-eulerSplit(ET,N,LeftET,RightET):-
-    append(LeftET,[N|RightET],Inter),
-    append(Inter,[N],ET).
+eSplit([Ele|List],Ele,[],RightL):-
+    remo(List,RightL).
+
+eSplit([X|List],Ele,[X|LeftList],RightL):-
+    X=\=Ele,
+    eSplit(List,Ele,LeftList,RightL).
 
 
+
+% eulerSplit(ET,N,LeftET,RightET):-
+%     append(LeftET,[N|RightET],Inter),
+%     append(Inter,[N],ET).
+
+eulertoPre([],[]).
 
 eulertoPre([N,N,N],[N]):-
     integer(N).
 eulertoPre([N|ET],L):-
-    eulerSplit(ET,N,LeftET,RightET),
+    eSplit(ET,N,LeftET,RightET),
     eulertoPre(LeftET,Left),
     eulertoPre(RightET,Right),
     append([N|Left],Right,L).
@@ -92,11 +110,12 @@ preET(BT, L):-
     eulertoPre(ET,L).
 
 
+eulertoIn([],[]).
 
 eulertoIn([N,N,N],[N]):-
     integer(N).
 eulertoIn([N|ET],L):-
-    eulerSplit(ET,N,LeftET,RightET),
+    eSplit(ET,N,LeftET,RightET),
     eulertoIn(LeftET,Left),
     eulertoIn(RightET,Right),
     append(Left,[N|Right],L).
@@ -104,11 +123,12 @@ inET(BT, L):-
     eulerTour(BT,ET),
     eulertoIn(ET,L).
 
+eulertoPost([],[]).
 
 eulertoPost([N,N,N],[N]):-
     integer(N).
 eulertoPost([N|ET],L):-
-    eulerSplit(ET,N,LeftET,RightET),
+    eSplit(ET,N,LeftET,RightET),
     eulertoPost(LeftET,Left),
     eulertoPost(RightET,Right),
     append(Left,Right,Inter),
@@ -132,6 +152,7 @@ toString(node(N,L,R),S):-
 
 
 isBalanced(empty).
+isBalanced(node(_,empty,empty)).
 isBalanced(node(_,L,R)):-
     isBalanced(L),isBalanced(R),
     height(L,H),
@@ -159,12 +180,14 @@ splitList(A,B,C):-
     (length(C,N);
     length(C,Nplus)).
     
+% makeSortedBST takes in a sorted list to make BST
 makeSortedBST([],empty).
 makeSortedBST(L,node(Ele,LeftBST,RightBST)):-
     splitList(L,LeftList,[Ele|RightList]),
     makeSortedBST(LeftList,LeftBST),
     makeSortedBST(RightList,RightBST).
 
+% Essentially sort given list and split in 3 parts. Make middle elemnt node, and recursively apply makeSortedBST
 makeBST(L, BST):-
     sort(L, Sorted),
     makeSortedBST(Sorted,BST).
@@ -178,7 +201,7 @@ lookup(F, node(N,L,R)):-
     lookup(F,R).
 
 
-insert(I,empty,ibt(node(I,empty,empty))).
+insert(I,empty,node(I,empty,empty)).
 insert(I, node(N,L,R), node(N,L,BST_Ret)):-
     I>N,
     insert(I, R, BST_Ret).
@@ -187,10 +210,10 @@ insert(I, node(N,L,R), node(N,BST_Ret,R)):-
     insert(I, L, BST_Ret).
 
 getMin(node(N,empty,_),N).
-getMin(node(N,L,R),E):-
+getMin(node(_,L,_),E):-
     getMin(L,E).
 
-del(_, node(empty), node(empty)).
+del(_, empty, empty).
 del(N, node(N,empty,R),R).
 del(N, node(N,L,empty),L).
 
@@ -207,5 +230,7 @@ del(N,node(K,L,R),node(K,L,R_N)):-
 del(N,node(K,L,R),node(K,L_N,R)):-
     N < K,
     del(N,L,L_N).
+
+
 
 % node(4, node(2, node(1, empty, empty), node(3, empty, empty)), node(6, node(5, empty, empty), node(7, empty, empty)))
