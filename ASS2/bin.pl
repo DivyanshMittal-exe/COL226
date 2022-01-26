@@ -1,45 +1,125 @@
 ibt(empty).
 ibt(node(N,L,R)):- integer(N),ibt(L),ibt(R).
 
-size(ibt(empty),0).
-size(BT,Size):-
-    ibt(node(_,L,R)) = BT,
-    Size is 1 + size(L) + size(R).
 
-height(ibt(empty),0).
-height(BT,Height):-
-    ibt(node(_,L,R)) = BT,
-    Height is 1 + max(height(L),height(R)).
+size(empty,0).
+size(node(_,L,R),Size):-
+    Size = 1 + size(L) + size(R).
+
+height(empty,0).
+height(node(_,L,R),Height):-
+    Height = 1 + max(height(L),height(R)).
 
 
-preorder(ibt(empty),[]).
-preorder(BT,List):-
-    ibt(node(N,L,R)) = BT,
+preorder(empty,[]).
+preorder(node(N,L,R),List):-
     preorder(L,LeftList),
     preorder(R,RightList),  
     append([N|LeftList],RightList,List).
 
-inorder(ibt(empty),[]).
-inorder(BT,List):-
-    % BT = ibt(node(N,L,R)),
-    ibt(node(N,L,R)) = BT,
+inorder(empty,[]).
+inorder(node(N,L,R),List):-
     inorder(L,LeftList),
     inorder(R,RightList),
     append(LeftList,[N],LL), 
     append(LL,RightList,List).
     
-postorder(ibt(empty),[]).
-postorder(BT,List):-
-    ibt(node(N,L,R)) = BT,
+postorder(empty,[]).
+postorder(node(N,L,R),List):-
     postorder(L,LeftList),
     postorder(R,RightList),
     append(RightList,[N],RR), 
     append(LeftList,RR,List).
 
 
-toString(ibt(empty),"()").
-toString(BT,S):-
-    ibt(node(N,L,R)) = BT,
+trPreorder(BT,L):-
+    trPreorderHelper([BT],[],L).
+trPreorderHelper([],X,X).
+trPreorderHelper([empty|BT_List],Accum,Result):-
+    trPreorderHelper(BT_List,Accum,Result).
+trPreorderHelper([node(N,L,R)|BT_List], Accum,Result):-
+    append(Accum,[N],A_New),
+    trPreorderHelper([L,R|BT_List],A_New,Result).
+
+
+
+trInorder(BT,L):-
+    trInorderHelper([BT],[],L).
+trInorderHelper([],X,X).
+trInorderHelper([empty|BT_List],Accum,Result):-
+    trInorderHelper(BT_List,Accum,Result).
+trInorderHelper([N|BT_List], Accum,Result):-
+    integer(N),
+    trInorderHelper(BT_List,[N|Accum],Result).
+trInorderHelper([node(N,L,R)|BT_List], Accum,Result):-
+    trInorderHelper([R,N,L|BT_List],Accum,Result).
+
+
+
+trPostorder(BT,L):-
+    trPostorderHelper([BT],[],L).
+trPostorderHelper([],X,X).
+trPostorderHelper([empty|BT_List],Accum,Result):-
+    trPostorderHelper(BT_List,Accum,Result).
+trPostorderHelper([node(N,L,R)|BT_List], Accum,Result):-
+    trPostorderHelper([R,L|BT_List],[N|Accum],Result).
+
+
+eulerTour(empty,[]).
+eulerTour(node(N,L,R), List):-
+    eulerTour(L,LeftList),
+    eulerTour(R,RightList),
+    append([N|LeftList],[N|RightList],MostList),
+    append(MostList,[N],List).
+
+
+
+eulerSplit(ET,N,LeftET,RightET):-
+    append(LeftET,[N|RightET],Inter),
+    append(Inter,[N],ET).
+
+
+
+eulertoPre([N,N,N],[N]):-
+    integer(N).
+eulertoPre([N|ET],L):-
+    eulerSplit(ET,N,LeftET,RightET),
+    eulertoPre(LeftET,Left),
+    eulertoPre(RightET,Right),
+    append([N|Left],Right,L).
+preET(BT, L):-
+    eulerTour(BT,ET),
+    eulertoPre(ET,L).
+
+
+
+eulertoIn([N,N,N],[N]):-
+    integer(N).
+eulertoIn([N|ET],L):-
+    eulerSplit(ET,N,LeftET,RightET),
+    eulertoIn(LeftET,Left),
+    eulertoIn(RightET,Right),
+    append(Left,[N|Right],L).
+inET(BT, L):-
+    eulerTour(BT,ET),
+    eulertoIn(ET,L).
+
+
+eulertoPost([N,N,N],[N]):-
+    integer(N).
+eulertoPost([N|ET],L):-
+    eulerSplit(ET,N,LeftET,RightET),
+    eulertoPost(LeftET,Left),
+    eulertoPost(RightET,Right),
+    append(Left,Right,Inter),
+    append(Inter,[N],L).
+postET(BT, L):-
+    eulerTour(BT,ET),
+    eulertoPost(ET,L).
+
+
+toString(empty,"()").
+toString(node(N,L,R),S):-
     toString(L,LeftString),
     toString(R,RightString),
     number_string(N,N_String),
@@ -51,81 +131,63 @@ toString(BT,S):-
     string_concat(S5,")",S).
 
 
-isBalanced(BT):-
-    ibt(node(_,L,R)) = BT,
-    height(L,LeftH),
-    height(R,RightH),
-    LeftH - RightH =:= 1;
-    RightH - LeftH =:= -1;
-    RightH - LeftH =:= 0.
+isBalanced(empty).
+isBalanced(node(_,L,R)):-
+    isBalanced(L),isBalanced(R),
+    height(L,H),
+    Hplus is H + 1,
+    Hminus is H - 1,
+    (height(R,H);height(R,Hplus);height(R,Hminus)).
 
-removeLast([_],[]).
-removeLast([H|T],[H|L]):-
-    removeLast(T,L).
 
-splitList([B],[],B,[]):-
-    integer(B).
-
-splitList([A,B],[A],B,[]):-
-    integer(A),
-    integer(B).
-
-last(X,[X]).
-last(X,[A|Z]) :- last(X,Z).
-
-splitList([H|L],[H|LeftList],Ele,RightList):-
-    last(LastELe,L),
-    removeLast(L,LR), 
-    splitList(LR,LeftList,Ele,RRemoved),
-    append(RRemoved, [LastELe], RightL),
-    RightList = RightL.
-    
-makeSortedBST([],ibt(empty)).
-
-makeSortedBST(L,BST):-
-    splitList(L,LeftList,Ele,RightList),
-    makeSortedBST(LeftList,LeftBST),
-    makeSortedBST(RightList,RightBST),
-    BST = ibt(node(Ele,LeftBST,RightBST)).
-
-% makeBST([],ibt(empty)).
-% makeBST([NH],ibt(node(NH,ibt(empty),ibt(empty)))).
-makeBST(L, BST):-
-    sort(L, Sorted),
-    makeSortedBST(Sorted,BS),
-    BST = BS.
-
-isSorted([A]).
+isSorted([_]).
 isSorted([A,B|T]):-
     A =< B,
     isSorted([B|T]).
-
 
 isBST(BT):-
     inorder(BT,List),
     isSorted(List).
 
-lookup(F,ibt(empty)):-
-    false.
 
-lookup(F, BST):-
-    ibt(node(N,L,R)) = BST,
+splitList([B],[],[B]).
+splitList([A,B],[A],[B]).
+splitList(A,B,C):-
+    append(B,C,A),
+    length(B,N),
+    Nplus is N+1,
+    (length(C,N);
+    length(C,Nplus)).
+    
+makeSortedBST([],empty).
+makeSortedBST(L,node(Ele,LeftBST,RightBST)):-
+    splitList(L,LeftList,[Ele|RightList]),
+    makeSortedBST(LeftList,LeftBST),
+    makeSortedBST(RightList,RightBST).
+
+makeBST(L, BST):-
+    sort(L, Sorted),
+    makeSortedBST(Sorted,BST).
+
+
+
+lookup(_,empty):- false.
+lookup(F, node(N,L,R)):-
     F =:= N;
     lookup(F,L);
     lookup(F,R).
 
-insert(I,ibt(empty),ibt(node(I,ibt(empty),ibt(empty)))).
 
-insert(I, BST1, BST2):-
-    ibt(node(N,L,R)) = BST1,
+insert(I,empty,ibt(node(I,empty,empty))).
+insert(I, node(N,L,R), node(N,L,BST_Ret)):-
     I>N,
-    insert(I, R, BST_Ret),
-    BST2 = ibt(node(N,L,BST_Ret)).
-
-insert(I, BST1, BST2):-
-    ibt(node(N,L,R)) = BST1,
+    insert(I, R, BST_Ret).
+insert(I, node(N,L,R), node(N,BST_Ret,R)):-
     I<N,
-    insert(I, L, BST_Ret),
-    BST2 = ibt(node(N,BST_Ret,R)).
+    insert(I, L, BST_Ret).
 
-    
+
+
+
+
+% node(4, node(2, node(1, empty, empty), node(3, empty, empty)), node(6, node(5, empty, empty), node(7, empty, empty)))
