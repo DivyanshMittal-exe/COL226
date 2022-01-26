@@ -186,8 +186,26 @@ insert(I, node(N,L,R), node(N,BST_Ret,R)):-
     I<N,
     insert(I, L, BST_Ret).
 
+getMin(node(N,empty,_),N).
+getMin(node(N,L,R),E):-
+    getMin(L,E).
+
+del(_, node(empty), node(empty)).
+del(N, node(N,empty,R),R).
+del(N, node(N,L,empty),L).
 
 
+del(N,node(N,L,R),node(E,L,R_New)):-
+    getMin(R,E),
+    del(E,R,R_New).
 
+
+del(N,node(K,L,R),node(K,L,R_N)):-
+    N > K,
+    del(N,R,R_N).
+
+del(N,node(K,L,R),node(K,L_N,R)):-
+    N < K,
+    del(N,L,L_N).
 
 % node(4, node(2, node(1, empty, empty), node(3, empty, empty)), node(6, node(5, empty, empty), node(7, empty, empty)))
