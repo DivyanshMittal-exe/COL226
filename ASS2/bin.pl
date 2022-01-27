@@ -1,19 +1,19 @@
 ibt(empty).
 ibt(node(N,L,R)):- integer(N),ibt(L),ibt(R).
 
-
+% Size is sum of left and right + 1
 size(empty,0).
 size(node(_,L,R),Size):-
     size(L,LeftS),
     size(R,RightS),
     Size is 1 + LeftS + RightS.
 
+% height is max(left,right) tree + 1
 height(empty,0).
 height(node(_,L,R),Height):-
     height(L,LeftH),
     height(R,RightH),
     Height is 1 + max(LeftH,RightH).
-
 
 preorder(empty,[]).
 preorder(node(N,L,R),List):-
@@ -83,6 +83,7 @@ remo([_], []).
 remo([X|L], [X|Y]) :- 
     remo(L, Y).
 
+% Used to Split list of form [LeftList,N,Right List,N]
 eSplit([Ele|List],Ele,[],RightL):-
     remo(List,RightL).
 
@@ -90,7 +91,7 @@ eSplit([X|List],Ele,[X|LeftList],RightL):-
     X=\=Ele,
     eSplit(List,Ele,LeftList,RightL).
 
-
+% This takes too long, so used different approach to split
 
 % eulerSplit(ET,N,LeftET,RightET):-
 %     append(LeftET,[N|RightET],Inter),
@@ -144,9 +145,9 @@ toString(node(N,L,R),S):-
     toString(R,RightString),
     number_string(N,N_String),
     string_concat("(",N_String,S1),
-    string_concat(S1,",",S2),
+    string_concat(S1,", ",S2),
     string_concat(S2,LeftString,S3),
-    string_concat(S3,",",S4),
+    string_concat(S3,", ",S4),
     string_concat(S4,RightString,S5),
     string_concat(S5,")",S).
 
@@ -166,6 +167,7 @@ isSorted([A,B|T]):-
     A =< B,
     isSorted([B|T]).
 
+% Its enough to check if its inorder is sorted or not
 isBST(BT):-
     inorder(BT,List),
     isSorted(List).
@@ -213,23 +215,23 @@ getMin(node(N,empty,_),N).
 getMin(node(_,L,_),E):-
     getMin(L,E).
 
-del(_, empty, empty).
-del(N, node(N,empty,R),R).
-del(N, node(N,L,empty),L).
+delete(_, empty, empty).
+delete(N, node(N,empty,R),R).
+delete(N, node(N,L,empty),L).
 
 
-del(N,node(N,L,R),node(E,L,R_New)):-
+delete(N,node(N,L,R),node(E,L,R_New)):-
     getMin(R,E),
-    del(E,R,R_New).
+    delete(E,R,R_New).
 
 
-del(N,node(K,L,R),node(K,L,R_N)):-
+delete(N,node(K,L,R),node(K,L,R_N)):-
     N > K,
-    del(N,R,R_N).
+    delete(N,R,R_N).
 
-del(N,node(K,L,R),node(K,L_N,R)):-
+delete(N,node(K,L,R),node(K,L_N,R)):-
     N < K,
-    del(N,L,L_N).
+    delete(N,L,L_N).
 
 
 
