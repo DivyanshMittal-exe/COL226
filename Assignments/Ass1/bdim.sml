@@ -8,8 +8,9 @@ exception notNumber;
 exception outOfBoundMemoryAccess;
 exception outOfBoundCodeAccess;
 exception Overflow;
+exception notBoolError;
 
-val maxMemSize = 64
+val maxMemSize = 128
 type com = int*int*int*int;
 val mem = Array.array(maxMemSize,0)
 
@@ -49,26 +50,26 @@ fun getInt i =
       SOME i => i
     | NONE   => raise notNumber
 
+fun getText dat = 
+    case TextIO.inputLine dat of 
+      SOME l => l
+    | NONE   => "" 
 
+fun  listToTuple (a::b::c::d::nil) = (a,b,c,d)
+   | listToTuple x = raise syntaxError
 
 (* Takes in string and returns tuple of code *)
 fun getCodeTuple l =
     let
       val i = String.tokens(fn x => x = #"\n" orelse x = #"(" orelse x = #")" orelse x = #",") l
-      val h = map getInt i 
-      val l = List.length(h) 
-      val k = if l = 4 then 1 else raise syntaxError
-      val [a,b,c,d] = h
     in
-      (a,b,c,d)
+      listToTuple (map getInt i)
     end
     
 (* Reads file *)
 fun read file = 
       Vector.fromList(map getCodeTuple (getline (TextIO.openIn file)))
       
-
-
 
 (* Main function to interpret *)
 fun interpret file = 
@@ -122,8 +123,7 @@ fun interpret file =
               else if (opc = 1) then 
                   let
                       val p = print("Input: ")
-                      val SOME inp = TextIO.inputLine TextIO.stdIn
-                      val numb = getInt (chomp1 inp)
+                      val numb = getInt (chomp1 (getText (TextIO.stdIn)))
                     in
                       (Array.update(mem,tgt,numb);
                       eval(loc+1))
@@ -138,17 +138,23 @@ fun interpret file =
                       val wb= Word.notb(wa)
                       val c = Word.toInt(wb)
                     in
-                      (Array.update(mem,tgt,c);
-                      eval(loc+1))
+                      if a = 1 orelse a = 0 then
+                        (Array.update(mem,tgt,c);
+                        eval(loc+1))
+                      else 
+                        raise notBoolError
                     end
 
               else if (opc = 4) then
-                  let
+                    let
                       val wc= Word.orb(wa,wb)
                       val wd = Word.toInt(wc)
                     in
-                      (Array.update(mem,tgt,wd);
-                      eval(loc+1))
+                      if a = 1 orelse a = 0 orelse b = 1 orelse b = 0 then
+                        (Array.update(mem,tgt,wd);
+                        eval(loc+1))
+                      else 
+                        raise notBoolError
                     end
 
               else if (opc = 5) then
@@ -156,8 +162,11 @@ fun interpret file =
                       val wc= Word.andb(wa,wb)
                       val wd = Word.toInt(wc)
                     in
-                      (Array.update(mem,tgt,wd);
-                      eval(loc+1))
+                      if a = 1 orelse a = 0 orelse b = 1 orelse b = 0 then
+                        (Array.update(mem,tgt,wd);
+                        eval(loc+1))
+                      else 
+                          raise notBoolError
                     end
 
               else if (opc = 6) then
@@ -203,9 +212,13 @@ fun interpret file =
                     eval(loc+1))
 
               else if (opc = 13) then
-                  if (a <> 0) then
+
+                  if (a = 1) then
                     eval(tgt)
-                  else eval(loc+1)
+                  else if (a = 0) then
+                    eval(loc+1)
+                  else 
+                    raise notBoolError
 
               else if (opc = 14) then
                   eval(tgt)
@@ -226,6 +239,7 @@ fun interpret file =
               | modByZeroError => print("Error: Modulus by zero attempted on line "^Int.toString(loc)^"\n")
               | outOfBoundMemoryAccess => print("Error:Invalid memory access attempted on line "^Int.toString(loc)^"\n")
               | outOfBoundCodeAccess => print("Error:Invalid code access attempted on line "^Int.toString(loc)^"\n")
+              | notBoolError => print("Error:Bool op applied on value other than 0 or 1 \n")
 
     in 
         (* To start from eval 0 *)
@@ -233,4 +247,4 @@ fun interpret file =
     end
     handle syntaxError => print("Invalid Syntax \n")
         |  notNumber => print("Invalid Syntax: Syntax not integer\n")
-        |  overflow => print("Value too large: Overflow error \n")
+        |  overflow => print("Overlow error\n")
