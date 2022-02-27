@@ -1,0 +1,42 @@
+Program="program", identifier, "::", Block;
+Block=DeclarationSeq, CommandSeq;
+DeclarationSeq={Declaration};
+Declaration="var", VariableList, ":", Type, ";";
+Type="int"|"bool";
+VariableList = Variable, {",", Variable};
+CommandSeq="{",{Command,";"},"}" ;
+Command=Variable,":=",Expression|
+"read", Variable|
+"write", IntExpression|
+"if", BoolExpression, "then", CommandSeq|
+"else", CommandSeq|
+"endif"|
+"while", BoolExpression, "do", CommandSeq|
+"endwh" ;
+
+Expression=IntExpression|BoolExpression;
+IntExpression=IntExpression, AddOp, IntTerm|IntTerm;
+IntTerm=IntTerm, MultOp, IntFactor|IntFactor ;
+IntFactor=Numeral|Variable|
+"(",IntExpression,")"|"˜",IntFactor ;
+BoolExpression=BoolExpression, "||", BoolTerm|BoolTerm ;
+BoolTerm=BoolTerm, "&&", BoolFactor|BoolFactor ;
+BoolFactor="tt"|"ff"|Variable|Comparison|
+"(",BoolExpression,")"|"!",BoolFactor ;
+Comparison=IntExpression, RelOp, IntExpression ;
+Variable=Identifier;
+RelOp="<"|"<="|"="|">"|">="|"<>" ;
+AddOp="+"|"−" ;
+MultOp="∗"|"/"|"%" ;
+Identifier=Letter,{Letter|Digit} ;
+Numeral=["+"|"˜"],Digit,{Digit} ;
+
+Character=Letter|Digit|SpecialChar;
+Letter=UpperCase|LowerCase;
+UpperCase="A"|"B"|"C"|"D"|"E"|"F"|"G"|"H"|
+"I"|"J"|"K"|"L"|"M"|"N"|"O"|"P"|"Q"|
+"R"|"S"|"T"|"U"|"V "|"W"|"X"|"Y "|"Z";
+LowerCase="a"|"b"|"c"|"d"|"e"|"f"|"g"|"h"|
+"i"|"j"|"k"|"l"|"m"|"n"|"o"|"p"|"q"|
+"r"|"s"|"t"|"u"|"v"|"w"|"x"|"y"|"z";
+Digit="0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9";
