@@ -70,10 +70,10 @@ decleration: VAR VarList COLON Type DELIM ((Dec(VarList,Type)))
 VarList : IDENTIFIER ([IDENTIFIER])
         | IDENTIFIER COMMA VarList ((IDENTIFIER::VarList))
 
-command_seq: LCURL CommandList RCURL ((command_seq(CommandList)))
+command_seq: LCURL command_seq RCURL ((CommandSeq(command_seq)))
 
 
-CommandList: command DELIM CommandList ((command::CommandList))
+command_seq: command DELIM command_seq ((command::command_seq))
             |                           ([])
     
 command: IDENTIFIER ASSN expression ((Set(IDENTIFIER,expression)))
