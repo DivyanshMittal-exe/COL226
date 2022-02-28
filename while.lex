@@ -30,7 +30,9 @@ structure T= Tokens
     ("endif",T.ENDIF),
     ("while",T.WHILE),
     ("do",T.DO),
-    ("endwh",T.ENDWH)
+    ("endwh",T.ENDWH),
+    ("tt",T.BTRUE),
+    ("ff",T.BFALSE),
    ]
    fun getInt i = 
     case Int.fromString(i) of 
@@ -52,8 +54,6 @@ ws = [\ \t];
 [\n|\r\n]  => (linec := (!linec) + 1; lex());
 {ws}+    => (pos := !pos \+ size yytext;  lex());
 {digit}+ => (pos := !pos \+ size yytext;  T.NUMBER((getInt yytext), !pos, !linec));
-"tt"     => (pos := !pos \+ size yytext;  T.BOOLVAL(true, !pos, !linec));
-"ff"     => (pos := !pos \+ size yytext;  T.BOOLVAL(false, !pos, !linec));
 "+"      => (pos := !pos \+ size yytext;  T.PLUS(!pos, !linec));
 "-"      => (pos := !pos \+ size yytext;  T.MINUS(!pos, !linec)); 
 "*"      => (pos := !pos \+ size yytext;  T.MUL(!pos, !linec));

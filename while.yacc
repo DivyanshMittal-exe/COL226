@@ -1,4 +1,4 @@
-(* *)
+open AST
 
 %%
 
@@ -7,32 +7,40 @@
 %pos int
 
 %term
-    NUMBER of int| BOOLVAL of bool |IDENTIFIER of string
+  NUMBER of int|IDENTIFIER of string
+  |BTRUE|BFALSE
   |INT|BOOL
-  | PROGRAM| VAR
-  | READ | WRITE
+  |PROGRAM| VAR
+  |READ | WRITE
   |IF|THEN|ELSE|ENDIF|WHILE|DO|ENDWH
-  | PLUS | MINUS | MUL | DIV | MOD
+  |PLUS | MINUS | MUL | DIV | MOD
   |EQ|NEQ|LT|GT|LE|GE
   |NEGATE
-  | LPAREN| RPAREN
-  | ASSN|COLON|SCOPE|COMMA|DELIM
+  |LPAREN| RPAREN
+  |ASSN|COLON|SCOPE|COMMA|DELIM
   |AND|OR|NOT
   |LCURL|RCURL
   |EOF
 
 %nonterm
-    Start of AST.exp
-  | Exp of AST.exp
-  | Term of AST.exp
-  | Factor of AST.exp
-  | Unit of AST.exp
+    START of Prog
+  | block of Block
+  | decleration_seq of DecList
+  | decleration of Dec 
+  | command_seq of CommandSeq
+  | command of Command
+  | expression of Exp
 
-%left ADD SUB
-%left MUL DIV
-%right EXPT
- 
-%start Start
+%left PLUS MINUS
+%left TIMES DIV MOD
+%right NEG
+%left OR
+%left AND
+%right NOT
+%left LT LEQ EQ GT GEQ NEQ 
+
+
+%start START
 
 %keyword
 
@@ -48,24 +56,53 @@
 
 %%
 
-START: Prog (Prog)
 
-Prog: PROGRAM IDENTIFIER SCOPE BLOCK
+START: PROGRAM IDENTIFIER SCOPE block ((Prog(IDENTIFIER,block)))
 
-/* BLOCK:  */
+block: decleration_seq command_seq ((Block(decleration_seq,command_seq)))
+
+decleration_seq: decleration decleration_seq ((decleration::decleration_seq))
+      |                      ([])
+
+decleration: VAR VarList COLON Type DELIM ((Dec(VarList,Type)))
 
 
+VarList : IDENTIFIER ([IDENTIFIER])
+        | IDENTIFIER COMMA VarList ((IDENTIFIER::VarList))
 
-Exp: Term (Term)
-  | Exp ADD Term (AST.BinApp(AST.Add, Exp, Term))
-  | Exp SUB Term (AST.BinApp(AST.Sub, Exp, Term))
+command_seq: LCURL CommandList RCURL ((command_seq(CommandList)))
 
-Term: Factor (Factor)
-  | Term MUL Factor (AST.BinApp(AST.Mul, Term, Factor))
-  | Term DIV Factor (AST.BinApp(AST.Div, Term, Factor))
 
-Factor: Unit (Unit)
-  | Unit EXPT Factor (AST.BinApp(AST.Expt, Unit, Factor))
+CommandList: command DELIM CommandList ((command::CommandList))
+            |                           ([])
+    
+command: IDENTIFIER ASSN expression ((Set(IDENTIFIER,expression)))
+        | READ IDENTIFIER ((Read(IDENTIFIER)))
+        | WRITE expression ((Write(expression)))
+        |IF expression THEN command_seq ELSE command_seq ENDIF ((ite(expression,CommandSeq1,CommandSeq2)))
+        |WHILE expression DO command_seq ENDWH ((while(expression,command_seq)))
 
-Unit: INT (AST.Int(INT))
-  | LPAREN Exp RPAREN (Exp)
+
+expression:
+        expression LT expression ((LT(expression1,expression2)))
+      | expression LEQ expression ((LEQ(expression1,expression2)))
+      | expression EQ expression ((EQ(expression1,expression2)))
+      | expression GT expression ((GT(expression1,expression2)))
+      | expression GEQ expression ((GEQ(expression1,expression2)))
+      | expression NEQ expression ((NEW(expression1,expression2)))
+      | expression AND expression ((AND(expression1,expression2)))
+      | expression OR expression ((OR(expression1,expression2)))
+      | expression PLUS expression ((PLUS(expression1,expression2)))
+      | expression MINUS expression ((MINUS(expression1,expression2)))
+      | expression TIMES expression ((TIMES(expression1,expression2)))
+      | expression DIV expression ((DIV(expression1,expression2)))
+      | expression MOD expression ((MOD(expression1,expression2)))
+
+      | LPAREN expression RPAREN ((expression))
+
+      | NEG expression ((NEG(expression)))
+      | NOT expression ((NOT(expression)))
+      | BTRUE ((BOOL(true)))
+      | BFALSE ((BOOL(false)))
+      | NUMBER ((NUM(NUMBER)))
+      | IDENTIFIER ((Var(IDENTIFIER)))
