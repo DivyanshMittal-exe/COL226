@@ -80,7 +80,8 @@ command: IDENTIFIER ASSN expression ((Set(IDENTIFIER,expression)))
         | READ IDENTIFIER ((Read(IDENTIFIER)))
         | WRITE expression ((Write(expression)))
         |IF expression THEN command_seq ELSE command_seq ENDIF ((ite(expression,CommandSeq1,CommandSeq2)))
-        |WHILE expression DO command_seq ENDWH ((while(expression,command_seq)))
+        |WHILE expression DO command_seq ENDWH ((while_exp
+        (expression,command_seq)))
 
 
 expression:
@@ -102,7 +103,7 @@ expression:
 
       | NEG expression ((NEG(expression)))
       | NOT expression ((NOT(expression)))
-      | BTRUE ((BOOL(true)))
-      | BFALSE ((BOOL(false)))
+      | BTRUE ((BOOLEAN(true)))
+      | BFALSE ((BOOLEAN(false)))
       | NUMBER ((NUM(NUMBER)))
       | IDENTIFIER ((Var(IDENTIFIER)))

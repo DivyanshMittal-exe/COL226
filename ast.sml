@@ -1,21 +1,18 @@
-structure AST : DATATYPES =
+structure AST =
 struct
 
 type id = string
 
 datatype Prog = Prog of id*Block
-and      Block = Block of DecList*CommandSeq
-and      DecList = DecList of Dec list
-and      Dec = Dec of VarList*Types
-and      Types = INT|BOOL
-and      VarList = VarList of Var list
+and      Block = Block of (Dec list)*(Command list)
+and      Dec = Dec of (Var list)*dtypes
+and      dtypes = INT|BOOL
 and      Var = Var of id
-and      CommandSeq = CommandSeq of Command list
 and      Command = Set of Var*Exp
                   |Read of Var
                   |Write of Exp
-                  |ite of Exp*CommandSeq*CommandSeq
-                  |while of Exp*CommandSeq
+                  |ite of Exp*(Command list)*(Command list)
+                  |while_exp of Exp*(Command list)
 and      Exp =  LT of Exp*Exp|
                 LEQ of Exp*Exp|
                 EQ of Exp*Exp|
@@ -32,60 +29,60 @@ and      Exp =  LT of Exp*Exp|
                 MOD of Exp*Exp|
                 NEG of Exp|
                 NUM of int|
-                BOOL of bool
+                BOOLEAN of bool
 
 fun print_Program (Prog(id,block):Prog) = (print(id);print_block(block))
 
-fun print_block(block(DecList,CommandSeq):Block) = (print_DecList(DecList);print_CommandSeq(CommandSeq)) 
+and print_block(Block(declist,commseq):Block) = (print_DecList(declist);print_CommandSeq(commseq)) 
 
 
-fun print_DecList(declist:DecList) = 
+and print_DecList(declist) = 
     case declist of 
         [] => print("\n")
-        |Dec(varlist,type)::DecListLeft => (print_varlist(varlist);print_type(type);print_DecList(DecListLeft))
+        |(Dec(varlist,dtype)):: declistleft => (print_varlist(varlist);print_type(dtype);print_DecList(declistleft))
 
-fun print_type(type:Types) = 
-    case type of
+and print_type(dtype:dtypes) = 
+    case dtype of
         INT => print("Int")
         |BOOL => print("Bool")
 
-fun print_varlist(varlist:VarList) = 
+and print_varlist(varlist:Var list) = 
     case varlist of 
         [] => print(" : ")
         |Var(id)::varlistLeft => (print(id);print_varlist(varlistLeft))
 
         
-fun print_CommandSeq(command_seq:CommandSeq ) = 
+and print_CommandSeq(command_seq:(Command list) ) = 
     case command_seq of 
             [] => print("\n")
             |comm::comlistLeft => (print_command(comm);print_CommandSeq(comlistLeft))
 
-fun print_command(com:Command) = 
+and print_command(com:Command) = 
     case com of
-        Command(Set(Var(id),Exp)) => (print(id);print_exp(Exp))
-        |Command(Read(Var(id))) => print("Read: "^id)
-        |Command(Write(Exp)) => (print("Write: ");print_exp(Exp))
+        (Set(Var(id),Exp)) => (print(id);print_exp(Exp))
+        |(Read(Var(id))) => print("Read: "^id)
+        |(Write(Exp)) => (print("Write: ");print_exp(Exp))
         |ite(exp,comms1,comms2) => (print_exp(exp);print_CommandSeq(comms1);print_CommandSeq(comms2))
-        |while(exp,comms) => (print_exp(exp);print_CommandSeq(comms))
+        |while_exp(exp,comms) => (print_exp(exp);print_CommandSeq(comms))
 
-fun print_exp(exp) = 
+and print_exp(exp) = 
     case exp of 
-        LT(exp1,exp2) => (print_exp(exp1);print(" < ");print(exp2))
-        |LEQ(exp1,exp2) => (print_exp(exp1);print(" <= ");print(exp2))
-        |EQ(exp1,exp2) => (print_exp(exp1);print(" = ");print(exp2))
-        |GT(exp1,exp2) => (print_exp(exp1);print(" > ");print(exp2))
-        |GEQ(exp1,exp2) => (print_exp(exp1);print(" >= ");print(exp2))
-        |NEQ(exp1,exp2) => (print_exp(exp1);print(" <> ");print(exp2))
-        |NOT(exp) => (print("!");print(exp))
-        |AND(exp1,exp2) => (print_exp(exp1);print("&&");print(exp2))
-        |OR(exp1,exp2) => (print_exp(exp1);print("||");print(exp2))
-        |PLUS(exp1,exp2) => (print_exp(exp1);print("+");print(exp2))
-        |MINUS(exp1,exp2) => (print_exp(exp1);print("_");print(exp2))
-        |TIMES(exp1,exp2) => (print_exp(exp1);print("*");print(exp2))
-        |DIV(exp1,exp2) => (print_exp(exp1);print("/");print(exp2))
-        |MOD(exp1,exp2) => (print_exp(exp1);print("%");print(exp2))
-        |NEG(exp) => (print("~");print(exp))
+        LT(exp1,exp2) => (print_exp(exp1);print(" < ");print_exp(exp2))
+        |LEQ(exp1,exp2) => (print_exp(exp1);print(" <= ");print_exp(exp2))
+        |EQ(exp1,exp2) => (print_exp(exp1);print(" = ");print_exp(exp2))
+        |GT(exp1,exp2) => (print_exp(exp1);print(" > ");print_exp(exp2))
+        |GEQ(exp1,exp2) => (print_exp(exp1);print(" >= ");print_exp(exp2))
+        |NEQ(exp1,exp2) => (print_exp(exp1);print(" <> ");print_exp(exp2))
+        |NOT(exp) => (print("!");print_exp(exp))
+        |AND(exp1,exp2) => (print_exp(exp1);print("&&");print_exp(exp2))
+        |OR(exp1,exp2) => (print_exp(exp1);print("||");print_exp(exp2))
+        |PLUS(exp1,exp2) => (print_exp(exp1);print("+");print_exp(exp2))
+        |MINUS(exp1,exp2) => (print_exp(exp1);print("-");print_exp(exp2))
+        |TIMES(exp1,exp2) => (print_exp(exp1);print("*");print_exp(exp2))
+        |DIV(exp1,exp2) => (print_exp(exp1);print("/");print_exp(exp2))
+        |MOD(exp1,exp2) => (print_exp(exp1);print("%");print_exp(exp2))
+        |NEG(exp) => (print("~");print_exp(exp))
         |NUM(integer) => print(Int.toString(integer))
-        |BOOL (boolean) => print(Bool.toString(boolean))
+        |BOOLEAN (boolean) => print(Bool.toString(boolean))
 
-end;
+end
