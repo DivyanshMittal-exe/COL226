@@ -8,4 +8,4 @@ use "whileinterface.sml";
 Control.Print.printLength := 1000; (* set printing parameters so that *)
 Control.Print.printDepth := 1000; (* we’ll see all details of parse trees *)
 Control.Print.stringDepth := 1000; (* and strings *)
-open Intexp;
+open While;

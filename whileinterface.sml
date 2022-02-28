@@ -1,50 +1,42 @@
+structure While = struct (* Module for interfacing with parser and lexer *)
+(* Most of the following is "boilerplate" code that needs to be slightly edited on a per parser basis. *)
 structure WhileLrVals = WhileLrValsFun(structure Token = LrParser.Token)
 structure WhileLex = WhileLexFun(structure Tokens = WhileLrVals.Tokens);
 structure WhileParser =
-	  Join(structure LrParser = LrParser
-     	       structure ParserData = WhileLrVals.ParserData
-     	       structure Lex = WhileLex)
-     
-fun invoke lexstream =
-		let fun print_error (s, pos, col) =
-		    	TextIO.output(TextIO.stdOut, "Syntax Error: " ^ (Int.toString pos) ^ ":" ^ (Int.toString col) ^ ":" ^ s ^ "\n")
-		in
-		    WhileParser.parse(0,lexstream,print_error,())
-		end
+Join(structure LrParser = LrParser
+structure ParserData = WhileLrVals.ParserData
+structure Lex = WhileLex)
+val invoke = fn lexstream => (* The invoke function invokes the parser given a lexer *)
+let val print_error = fn (str,pos,_) =>
+TextIO.output(TextIO.stdOut,
+"***While Parser Error at character position " ^ (Int.toString pos)
+^ "***\n" ^ str^ "\n")
+in WhileParser.parse(0,lexstream,print_error,())
+end
+fun newLexer fcn = (* newLexer creates a lexer from a given input-reading function *)
+let val lexer = WhileParser.makeLexer fcn
+val _ = WhileLex.UserDeclarations.init()
+in lexer
+end
 
-fun stringToLexer str =
-    let val done = ref false
-    	val lexer =  WhileParser.makeLexer (fn _ => if (!done) then "" else (done:=true;str))
-    in
-	lexer
-    end	
-		
-fun parse (lexer) =
-    let val dummyEOF = WhileLrVals.Tokens.EOF(0,0)
-    	val (result, lexer) = invoke lexer
-	val (nextToken, lexer) = WhileParser.Stream.get lexer
-    in
-        if WhileParser.sameToken(nextToken, dummyEOF) then result
- 	else (TextIO.output(TextIO.stdOut, "Warning: Unconsumed input \n"); result)
-    end
-
-val parseString = parse o stringToLexer
-
-
-fun parseFile (file) = 
-	let
-		val In = TextIO.openIn(file)
-		val s = TextIO.inputAll(In)
-		val tree = parseString s;
-		val _ = TextIO.closeIn(In)
-
-	in
-		print_Program(tree)
-end 
-
-val args = CommandLine.arguments()
-val file = List.nth(args, 0)
-
-fun main() = (parseFile(file))
-
-val _ = main()
+fun stringToLexer str = (* creates a lexer from a string *)
+let val done = ref false
+in newLexer (fn n => if (!done) then "" else (done := true; str))
+end
+fun fileToLexer filename = (* creates a lexer from a file *)
+let val inStream = TextIO.openIn(filename)
+in newLexer (fn n => TextIO.inputAll(inStream))
+end
+fun lexerToParser (lexer) = (* creates a parser from a lexer *)
+let val dummyEOF = WhileLrVals.Tokens.EOF(0,0)
+val (result,lexer) = invoke lexer
+val (nextToken,lexer) = WhileParser.Stream.get lexer
+in if WhileParser.sameToken(nextToken,dummyEOF) then
+result
+else (TextIO.output(TextIO.stdOut,
+"*** While PARSER WARNING -- unconsumed input ***\n");
+result)
+end
+val parseString = lexerToParser o stringToLexer (* parses a string *)
+val parseFile = lexerToParser o fileToLexer (* parses a file *)
+end (* struct *)

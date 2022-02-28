@@ -6,7 +6,7 @@ type id = string
 datatype Prog = Prog of id*Block
 and      Block = Block of (Dec list)*(Command list)
 and      Dec = Dec of (Var list)*dtypes
-and      dtypes = INT|BOOL
+and      dtypes = INTEGER|BOOL
 and      Var = Var of id
 and      Command = Set of Var*Exp
                   |Read of Var
@@ -29,7 +29,8 @@ and      Exp =  LT of Exp*Exp|
                 MOD of Exp*Exp|
                 NEG of Exp|
                 NUM of int|
-                BOOLEAN of bool
+                BOOLEAN of bool|
+                Exp of Var
 
 fun print_Program (Prog(id,block):Prog) = (print(id);print_block(block))
 
@@ -43,7 +44,7 @@ and print_DecList(declist) =
 
 and print_type(dtype:dtypes) = 
     case dtype of
-        INT => print("Int")
+        INTEGER => print("Int")
         |BOOL => print("Bool")
 
 and print_varlist(varlist:Var list) = 
@@ -59,9 +60,9 @@ and print_CommandSeq(command_seq:(Command list) ) =
 
 and print_command(com:Command) = 
     case com of
-        (Set(Var(id),Exp)) => (print(id);print_exp(Exp))
+        (Set(Var(id),exp)) => (print(id);print_exp(exp))
         |(Read(Var(id))) => print("Read: "^id)
-        |(Write(Exp)) => (print("Write: ");print_exp(Exp))
+        |(Write(exp)) => (print("Write: ");print_exp(exp))
         |ite(exp,comms1,comms2) => (print_exp(exp);print_CommandSeq(comms1);print_CommandSeq(comms2))
         |while_exp(exp,comms) => (print_exp(exp);print_CommandSeq(comms))
 
