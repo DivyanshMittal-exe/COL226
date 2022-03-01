@@ -5,6 +5,7 @@ use "while.yacc.sig";
 use "while.yacc.sml"; 
 use "while.lex.sml";
 use "typechecking.sml";
+use "evaluator.sml";
 use "whileinterface.sml";
 Control.Print.printLength := 100; 
 Control.Print.printDepth := 100; 

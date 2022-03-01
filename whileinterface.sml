@@ -44,7 +44,7 @@ fun parseFile  filename =
       val ast_made = lexerToParser (fileToLexer (filename))
     in
       if typecheck ast_made  = true then 
-        ast_made
+        evaluate ast_made
       else 
         raise typeMismatchError
     end
