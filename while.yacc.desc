@@ -1,18 +1,18 @@
 
 state 0:
 
-	srt : . PROGRAM IDENTIFIER SCOPE block 
+	srt : . PROGRAM IDENTIFIER SCOPE decleration_seq command_seq 
 
 	PROGRAM	shift 1
 
-	srt	goto 81
+	srt	goto 80
 
 	.	error
 
 
 state 1:
 
-	srt : PROGRAM . IDENTIFIER SCOPE block 
+	srt : PROGRAM . IDENTIFIER SCOPE decleration_seq command_seq 
 
 	IDENTIFIER	shift 2
 
@@ -22,7 +22,7 @@ state 1:
 
 state 2:
 
-	srt : PROGRAM IDENTIFIER . SCOPE block 
+	srt : PROGRAM IDENTIFIER . SCOPE decleration_seq command_seq 
 
 	SCOPE	shift 3
 
@@ -32,18 +32,17 @@ state 2:
 
 state 3:
 
-	srt : PROGRAM IDENTIFIER SCOPE . block 
+	srt : PROGRAM IDENTIFIER SCOPE . decleration_seq command_seq 
 
-	IDENTIFIER	reduce by rule 3
-	VAR	shift 7
-	READ	reduce by rule 3
-	WRITE	reduce by rule 3
-	IF	reduce by rule 3
-	WHILE	reduce by rule 3
-	LCURL	reduce by rule 3
-	EOF	reduce by rule 3
+	IDENTIFIER	reduce by rule 2
+	VAR	shift 6
+	READ	reduce by rule 2
+	WRITE	reduce by rule 2
+	IF	reduce by rule 2
+	WHILE	reduce by rule 2
+	LCURL	reduce by rule 2
+	EOF	reduce by rule 2
 
-	block	goto 6
 	decleration_seq	goto 5
 	decleration	goto 4
 
@@ -54,65 +53,8 @@ state 4:
 
 	decleration_seq : decleration . decleration_seq 
 
-	IDENTIFIER	reduce by rule 3
-	VAR	shift 7
-	READ	reduce by rule 3
-	WRITE	reduce by rule 3
-	IF	reduce by rule 3
-	WHILE	reduce by rule 3
-	LCURL	reduce by rule 3
-	EOF	reduce by rule 3
-
-	decleration_seq	goto 8
-	decleration	goto 4
-
-	.	error
-
-
-state 5:
-
-	block : decleration_seq . command_seq 
-
-	IDENTIFIER	shift 16
-	READ	shift 15
-	WRITE	shift 14
-	IF	shift 13
-	WHILE	shift 12
-	LCURL	shift 11
-	EOF	reduce by rule 11
-
-	command_seq	goto 10
-	command	goto 9
-
-	.	error
-
-
-state 6:
-
-	srt : PROGRAM IDENTIFIER SCOPE block .  (reduce by rule 0)
-
-	EOF	reduce by rule 0
-
-
-	.	error
-
-
-state 7:
-
-	decleration : VAR . varlist COLON Type DELIM 
-
-	IDENTIFIER	shift 18
-
-	varlist	goto 17
-
-	.	error
-
-
-state 8:
-
-	decleration_seq : decleration decleration_seq .  (reduce by rule 2)
-
 	IDENTIFIER	reduce by rule 2
+	VAR	shift 6
 	READ	reduce by rule 2
 	WRITE	reduce by rule 2
 	IF	reduce by rule 2
@@ -120,15 +62,72 @@ state 8:
 	LCURL	reduce by rule 2
 	EOF	reduce by rule 2
 
+	decleration_seq	goto 7
+	decleration	goto 4
+
+	.	error
+
+
+state 5:
+
+	srt : PROGRAM IDENTIFIER SCOPE decleration_seq . command_seq 
+
+	IDENTIFIER	shift 15
+	READ	shift 14
+	WRITE	shift 13
+	IF	shift 12
+	WHILE	shift 11
+	LCURL	shift 10
+	EOF	reduce by rule 10
+
+	command_seq	goto 9
+	command	goto 8
+
+	.	error
+
+
+state 6:
+
+	decleration : VAR . varlist COLON Type DELIM 
+
+	IDENTIFIER	shift 17
+
+	varlist	goto 16
+
+	.	error
+
+
+state 7:
+
+	decleration_seq : decleration decleration_seq .  (reduce by rule 1)
+
+	IDENTIFIER	reduce by rule 1
+	READ	reduce by rule 1
+	WRITE	reduce by rule 1
+	IF	reduce by rule 1
+	WHILE	reduce by rule 1
+	LCURL	reduce by rule 1
+	EOF	reduce by rule 1
+
+
+	.	error
+
+
+state 8:
+
+	command_seq : command . DELIM command_seq 
+
+	DELIM	shift 18
+
 
 	.	error
 
 
 state 9:
 
-	command_seq : command . DELIM command_seq 
+	srt : PROGRAM IDENTIFIER SCOPE decleration_seq command_seq .  (reduce by rule 0)
 
-	DELIM	shift 19
+	EOF	reduce by rule 0
 
 
 	.	error
@@ -136,60 +135,67 @@ state 9:
 
 state 10:
 
-	block : decleration_seq command_seq .  (reduce by rule 1)
+	command_seq : LCURL . command_seq RCURL 
 
-	EOF	reduce by rule 1
+	IDENTIFIER	shift 15
+	READ	shift 14
+	WRITE	shift 13
+	IF	shift 12
+	WHILE	shift 11
+	LCURL	shift 10
+	RCURL	reduce by rule 10
 
+	command_seq	goto 19
+	command	goto 8
 
 	.	error
 
 
 state 11:
 
-	command_seq : LCURL . command_seq RCURL 
+	command : WHILE . expression DO command_seq ENDWH 
 
-	IDENTIFIER	shift 16
-	READ	shift 15
-	WRITE	shift 14
-	IF	shift 13
-	WHILE	shift 12
-	LCURL	shift 11
-	RCURL	reduce by rule 11
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
-	command_seq	goto 20
-	command	goto 9
+	expression	goto 20
 
 	.	error
 
 
 state 12:
 
-	command : WHILE . expression DO command_seq ENDWH 
+	command : IF . expression THEN command_seq ELSE command_seq ENDIF 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
-	expression	goto 21
+	expression	goto 28
 
 	.	error
 
 
 state 13:
 
-	command : IF . expression THEN command_seq ELSE command_seq ENDIF 
+	command : WRITE . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 29
 
@@ -198,26 +204,19 @@ state 13:
 
 state 14:
 
-	command : WRITE . expression 
+	command : READ . IDENTIFIER 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	IDENTIFIER	shift 30
 
-	expression	goto 30
 
 	.	error
 
 
 state 15:
 
-	command : READ . IDENTIFIER 
+	command : IDENTIFIER . ASSN expression 
 
-	IDENTIFIER	shift 31
+	ASSN	shift 31
 
 
 	.	error
@@ -225,9 +224,9 @@ state 15:
 
 state 16:
 
-	command : IDENTIFIER . ASSN expression 
+	decleration : VAR varlist . COLON Type DELIM 
 
-	ASSN	shift 32
+	COLON	shift 32
 
 
 	.	error
@@ -235,9 +234,11 @@ state 16:
 
 state 17:
 
-	decleration : VAR varlist . COLON Type DELIM 
+	varlist : IDENTIFIER .  (reduce by rule 6)
+	varlist : IDENTIFIER . COMMA varlist 
 
-	COLON	shift 33
+	COLON	reduce by rule 6
+	COMMA	shift 33
 
 
 	.	error
@@ -245,49 +246,37 @@ state 17:
 
 state 18:
 
-	varlist : IDENTIFIER .  (reduce by rule 7)
-	varlist : IDENTIFIER . COMMA varlist 
+	command_seq : command DELIM . command_seq 
 
-	COLON	reduce by rule 7
-	COMMA	shift 34
+	IDENTIFIER	shift 15
+	READ	shift 14
+	WRITE	shift 13
+	IF	shift 12
+	ELSE	reduce by rule 10
+	ENDIF	reduce by rule 10
+	WHILE	shift 11
+	ENDWH	reduce by rule 10
+	LCURL	shift 10
+	RCURL	reduce by rule 10
+	EOF	reduce by rule 10
 
+	command_seq	goto 34
+	command	goto 8
 
 	.	error
 
 
 state 19:
 
-	command_seq : command DELIM . command_seq 
+	command_seq : LCURL command_seq . RCURL 
 
-	IDENTIFIER	shift 16
-	READ	shift 15
-	WRITE	shift 14
-	IF	shift 13
-	ELSE	reduce by rule 11
-	ENDIF	reduce by rule 11
-	WHILE	shift 12
-	ENDWH	reduce by rule 11
-	LCURL	shift 11
-	RCURL	reduce by rule 11
-	EOF	reduce by rule 11
+	RCURL	shift 35
 
-	command_seq	goto 35
-	command	goto 9
 
 	.	error
 
 
 state 20:
-
-	command_seq : LCURL command_seq . RCURL 
-
-	RCURL	shift 36
-
-
-	.	error
-
-
-state 21:
 
 	command : WHILE expression . DO command_seq ENDWH 
 	expression : expression . LT expression 
@@ -304,36 +293,53 @@ state 21:
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
 
-	DO	shift 50
-	PLUS	shift 49
-	MINUS	shift 48
-	TIMES	shift 47
-	DIV	shift 46
-	MOD	shift 45
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	AND	shift 38
-	OR	shift 37
+	DO	shift 49
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	AND	shift 37
+	OR	shift 36
 
+
+	.	error
+
+
+state 21:
+
+	expression : NOT . expression 
+
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
+
+	expression	goto 50
 
 	.	error
 
 
 state 22:
 
-	expression : NOT . expression 
+	expression : LPAREN . expression RPAREN 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 51
 
@@ -342,15 +348,15 @@ state 22:
 
 state 23:
 
-	expression : LPAREN . expression RPAREN 
+	expression : NEG . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 52
 
@@ -359,50 +365,7 @@ state 23:
 
 state 24:
 
-	expression : NEG . expression 
-
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
-
-	expression	goto 53
-
-	.	error
-
-
-state 25:
-
-	expression : BFALSE .  (reduce by rule 34)
-
-	THEN	reduce by rule 34
-	DO	reduce by rule 34
-	PLUS	reduce by rule 34
-	MINUS	reduce by rule 34
-	TIMES	reduce by rule 34
-	DIV	reduce by rule 34
-	MOD	reduce by rule 34
-	EQ	reduce by rule 34
-	NEQ	reduce by rule 34
-	LT	reduce by rule 34
-	GT	reduce by rule 34
-	LEQ	reduce by rule 34
-	GEQ	reduce by rule 34
-	RPAREN	reduce by rule 34
-	DELIM	reduce by rule 34
-	AND	reduce by rule 34
-	OR	reduce by rule 34
-
-
-	.	error
-
-
-state 26:
-
-	expression : BTRUE .  (reduce by rule 33)
+	expression : BFALSE .  (reduce by rule 33)
 
 	THEN	reduce by rule 33
 	DO	reduce by rule 33
@@ -426,35 +389,35 @@ state 26:
 	.	error
 
 
-state 27:
+state 25:
 
-	expression : IDENTIFIER .  (reduce by rule 36)
+	expression : BTRUE .  (reduce by rule 32)
 
-	THEN	reduce by rule 36
-	DO	reduce by rule 36
-	PLUS	reduce by rule 36
-	MINUS	reduce by rule 36
-	TIMES	reduce by rule 36
-	DIV	reduce by rule 36
-	MOD	reduce by rule 36
-	EQ	reduce by rule 36
-	NEQ	reduce by rule 36
-	LT	reduce by rule 36
-	GT	reduce by rule 36
-	LEQ	reduce by rule 36
-	GEQ	reduce by rule 36
-	RPAREN	reduce by rule 36
-	DELIM	reduce by rule 36
-	AND	reduce by rule 36
-	OR	reduce by rule 36
+	THEN	reduce by rule 32
+	DO	reduce by rule 32
+	PLUS	reduce by rule 32
+	MINUS	reduce by rule 32
+	TIMES	reduce by rule 32
+	DIV	reduce by rule 32
+	MOD	reduce by rule 32
+	EQ	reduce by rule 32
+	NEQ	reduce by rule 32
+	LT	reduce by rule 32
+	GT	reduce by rule 32
+	LEQ	reduce by rule 32
+	GEQ	reduce by rule 32
+	RPAREN	reduce by rule 32
+	DELIM	reduce by rule 32
+	AND	reduce by rule 32
+	OR	reduce by rule 32
 
 
 	.	error
 
 
-state 28:
+state 26:
 
-	expression : NUMBER .  (reduce by rule 35)
+	expression : IDENTIFIER .  (reduce by rule 35)
 
 	THEN	reduce by rule 35
 	DO	reduce by rule 35
@@ -478,7 +441,33 @@ state 28:
 	.	error
 
 
-state 29:
+state 27:
+
+	expression : NUMBER .  (reduce by rule 34)
+
+	THEN	reduce by rule 34
+	DO	reduce by rule 34
+	PLUS	reduce by rule 34
+	MINUS	reduce by rule 34
+	TIMES	reduce by rule 34
+	DIV	reduce by rule 34
+	MOD	reduce by rule 34
+	EQ	reduce by rule 34
+	NEQ	reduce by rule 34
+	LT	reduce by rule 34
+	GT	reduce by rule 34
+	LEQ	reduce by rule 34
+	GEQ	reduce by rule 34
+	RPAREN	reduce by rule 34
+	DELIM	reduce by rule 34
+	AND	reduce by rule 34
+	OR	reduce by rule 34
+
+
+	.	error
+
+
+state 28:
 
 	command : IF expression . THEN command_seq ELSE command_seq ENDIF 
 	expression : expression . LT expression 
@@ -495,28 +484,28 @@ state 29:
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
 
-	THEN	shift 54
-	PLUS	shift 49
-	MINUS	shift 48
-	TIMES	shift 47
-	DIV	shift 46
-	MOD	shift 45
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	AND	shift 38
-	OR	shift 37
+	THEN	shift 53
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	AND	shift 37
+	OR	shift 36
 
 
 	.	error
 
 
-state 30:
+state 29:
 
-	command : WRITE expression .  (reduce by rule 14)
+	command : WRITE expression .  (reduce by rule 13)
 	expression : expression . LT expression 
 	expression : expression . LEQ expression 
 	expression : expression . EQ expression 
@@ -531,20 +520,30 @@ state 30:
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
 
-	PLUS	shift 49
-	MINUS	shift 48
-	TIMES	shift 47
-	DIV	shift 46
-	MOD	shift 45
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	DELIM	reduce by rule 14
-	AND	shift 38
-	OR	shift 37
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	DELIM	reduce by rule 13
+	AND	shift 37
+	OR	shift 36
+
+
+	.	error
+
+
+state 30:
+
+	command : READ IDENTIFIER .  (reduce by rule 12)
+
+	DELIM	reduce by rule 12
 
 
 	.	error
@@ -552,71 +551,47 @@ state 30:
 
 state 31:
 
-	command : READ IDENTIFIER .  (reduce by rule 13)
+	command : IDENTIFIER ASSN . expression 
 
-	DELIM	reduce by rule 13
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
+	expression	goto 54
 
 	.	error
 
 
 state 32:
 
-	command : IDENTIFIER ASSN . expression 
+	decleration : VAR varlist COLON . Type DELIM 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	INTEGER	shift 57
+	BOOL	shift 56
 
-	expression	goto 55
+	Type	goto 55
 
 	.	error
 
 
 state 33:
 
-	decleration : VAR varlist COLON . Type DELIM 
+	varlist : IDENTIFIER COMMA . varlist 
 
-	INTEGER	shift 58
-	BOOL	shift 57
+	IDENTIFIER	shift 17
 
-	Type	goto 56
+	varlist	goto 58
 
 	.	error
 
 
 state 34:
 
-	varlist : IDENTIFIER COMMA . varlist 
-
-	IDENTIFIER	shift 18
-
-	varlist	goto 59
-
-	.	error
-
-
-state 35:
-
-	command_seq : command DELIM command_seq .  (reduce by rule 10)
-
-	ELSE	reduce by rule 10
-	ENDIF	reduce by rule 10
-	ENDWH	reduce by rule 10
-	RCURL	reduce by rule 10
-	EOF	reduce by rule 10
-
-
-	.	error
-
-
-state 36:
-
-	command_seq : LCURL command_seq RCURL .  (reduce by rule 9)
+	command_seq : command DELIM command_seq .  (reduce by rule 9)
 
 	ELSE	reduce by rule 9
 	ENDIF	reduce by rule 9
@@ -628,17 +603,48 @@ state 36:
 	.	error
 
 
-state 37:
+state 35:
+
+	command_seq : LCURL command_seq RCURL .  (reduce by rule 8)
+
+	ELSE	reduce by rule 8
+	ENDIF	reduce by rule 8
+	ENDWH	reduce by rule 8
+	RCURL	reduce by rule 8
+	EOF	reduce by rule 8
+
+
+	.	error
+
+
+state 36:
 
 	expression : expression OR . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
+
+	expression	goto 59
+
+	.	error
+
+
+state 37:
+
+	expression : expression AND . expression 
+
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 60
 
@@ -647,15 +653,15 @@ state 37:
 
 state 38:
 
-	expression : expression AND . expression 
+	expression : expression GEQ . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 61
 
@@ -664,15 +670,15 @@ state 38:
 
 state 39:
 
-	expression : expression GEQ . expression 
+	expression : expression LEQ . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 62
 
@@ -681,15 +687,15 @@ state 39:
 
 state 40:
 
-	expression : expression LEQ . expression 
+	expression : expression GT . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 63
 
@@ -698,15 +704,15 @@ state 40:
 
 state 41:
 
-	expression : expression GT . expression 
+	expression : expression LT . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 64
 
@@ -715,15 +721,15 @@ state 41:
 
 state 42:
 
-	expression : expression LT . expression 
+	expression : expression NEQ . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 65
 
@@ -732,15 +738,15 @@ state 42:
 
 state 43:
 
-	expression : expression NEQ . expression 
+	expression : expression EQ . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 66
 
@@ -749,15 +755,15 @@ state 43:
 
 state 44:
 
-	expression : expression EQ . expression 
+	expression : expression MOD . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 67
 
@@ -766,15 +772,15 @@ state 44:
 
 state 45:
 
-	expression : expression MOD . expression 
+	expression : expression DIV . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 68
 
@@ -783,15 +789,15 @@ state 45:
 
 state 46:
 
-	expression : expression DIV . expression 
+	expression : expression TIMES . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 69
 
@@ -800,15 +806,15 @@ state 46:
 
 state 47:
 
-	expression : expression TIMES . expression 
+	expression : expression MINUS . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 70
 
@@ -817,15 +823,15 @@ state 47:
 
 state 48:
 
-	expression : expression MINUS . expression 
+	expression : expression PLUS . expression 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	NUMBER	shift 27
+	IDENTIFIER	shift 26
+	BTRUE	shift 25
+	BFALSE	shift 24
+	NEG	shift 23
+	LPAREN	shift 22
+	NOT	shift 21
 
 	expression	goto 71
 
@@ -834,35 +840,57 @@ state 48:
 
 state 49:
 
-	expression : expression PLUS . expression 
+	command : WHILE expression DO . command_seq ENDWH 
 
-	NUMBER	shift 28
-	IDENTIFIER	shift 27
-	BTRUE	shift 26
-	BFALSE	shift 25
-	NEG	shift 24
-	LPAREN	shift 23
-	NOT	shift 22
+	IDENTIFIER	shift 15
+	READ	shift 14
+	WRITE	shift 13
+	IF	shift 12
+	WHILE	shift 11
+	ENDWH	reduce by rule 10
+	LCURL	shift 10
 
-	expression	goto 72
+	command_seq	goto 72
+	command	goto 8
 
 	.	error
 
 
 state 50:
 
-	command : WHILE expression DO . command_seq ENDWH 
+	expression : expression . LT expression 
+	expression : expression . LEQ expression 
+	expression : expression . EQ expression 
+	expression : expression . GT expression 
+	expression : expression . GEQ expression 
+	expression : expression . NEQ expression 
+	expression : expression . AND expression 
+	expression : expression . OR expression 
+	expression : expression . PLUS expression 
+	expression : expression . MINUS expression 
+	expression : expression . TIMES expression 
+	expression : expression . DIV expression 
+	expression : expression . MOD expression 
+	expression : NOT expression .  (reduce by rule 31)
 
-	IDENTIFIER	shift 16
-	READ	shift 15
-	WRITE	shift 14
-	IF	shift 13
-	WHILE	shift 12
-	ENDWH	reduce by rule 11
-	LCURL	shift 11
+	THEN	reduce by rule 31
+	DO	reduce by rule 31
+	PLUS	reduce by rule 31
+	MINUS	reduce by rule 31
+	TIMES	reduce by rule 31
+	DIV	reduce by rule 31
+	MOD	reduce by rule 31
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	reduce by rule 31
+	DELIM	reduce by rule 31
+	AND	reduce by rule 31
+	OR	reduce by rule 31
 
-	command_seq	goto 73
-	command	goto 9
 
 	.	error
 
@@ -882,25 +910,22 @@ state 51:
 	expression : expression . TIMES expression 
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
-	expression : NOT expression .  (reduce by rule 32)
+	expression : LPAREN expression . RPAREN 
 
-	THEN	reduce by rule 32
-	DO	reduce by rule 32
-	PLUS	reduce by rule 32
-	MINUS	reduce by rule 32
-	TIMES	reduce by rule 32
-	DIV	reduce by rule 32
-	MOD	reduce by rule 32
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	reduce by rule 32
-	DELIM	reduce by rule 32
-	AND	reduce by rule 32
-	OR	reduce by rule 32
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	shift 73
+	AND	shift 37
+	OR	shift 36
 
 
 	.	error
@@ -921,22 +946,25 @@ state 52:
 	expression : expression . TIMES expression 
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
-	expression : LPAREN expression . RPAREN 
+	expression : NEG expression .  (reduce by rule 30)
 
-	PLUS	shift 49
-	MINUS	shift 48
-	TIMES	shift 47
-	DIV	shift 46
-	MOD	shift 45
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	shift 74
-	AND	shift 38
-	OR	shift 37
+	THEN	reduce by rule 30
+	DO	reduce by rule 30
+	PLUS	reduce by rule 30
+	MINUS	reduce by rule 30
+	TIMES	reduce by rule 30
+	DIV	reduce by rule 30
+	MOD	reduce by rule 30
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	reduce by rule 30
+	DELIM	reduce by rule 30
+	AND	shift 37
+	OR	shift 36
 
 
 	.	error
@@ -944,64 +972,25 @@ state 52:
 
 state 53:
 
-	expression : expression . LT expression 
-	expression : expression . LEQ expression 
-	expression : expression . EQ expression 
-	expression : expression . GT expression 
-	expression : expression . GEQ expression 
-	expression : expression . NEQ expression 
-	expression : expression . AND expression 
-	expression : expression . OR expression 
-	expression : expression . PLUS expression 
-	expression : expression . MINUS expression 
-	expression : expression . TIMES expression 
-	expression : expression . DIV expression 
-	expression : expression . MOD expression 
-	expression : NEG expression .  (reduce by rule 31)
+	command : IF expression THEN . command_seq ELSE command_seq ENDIF 
 
-	THEN	reduce by rule 31
-	DO	reduce by rule 31
-	PLUS	reduce by rule 31
-	MINUS	reduce by rule 31
-	TIMES	reduce by rule 31
-	DIV	reduce by rule 31
-	MOD	reduce by rule 31
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	reduce by rule 31
-	DELIM	reduce by rule 31
-	AND	shift 38
-	OR	shift 37
+	IDENTIFIER	shift 15
+	READ	shift 14
+	WRITE	shift 13
+	IF	shift 12
+	ELSE	reduce by rule 10
+	WHILE	shift 11
+	LCURL	shift 10
 
+	command_seq	goto 74
+	command	goto 8
 
 	.	error
 
 
 state 54:
 
-	command : IF expression THEN . command_seq ELSE command_seq ENDIF 
-
-	IDENTIFIER	shift 16
-	READ	shift 15
-	WRITE	shift 14
-	IF	shift 13
-	ELSE	reduce by rule 11
-	WHILE	shift 12
-	LCURL	shift 11
-
-	command_seq	goto 75
-	command	goto 9
-
-	.	error
-
-
-state 55:
-
-	command : IDENTIFIER ASSN expression .  (reduce by rule 12)
+	command : IDENTIFIER ASSN expression .  (reduce by rule 11)
 	expression : expression . LT expression 
 	expression : expression . LEQ expression 
 	expression : expression . EQ expression 
@@ -1016,20 +1005,30 @@ state 55:
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
 
-	PLUS	shift 49
-	MINUS	shift 48
-	TIMES	shift 47
-	DIV	shift 46
-	MOD	shift 45
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	DELIM	reduce by rule 12
-	AND	shift 38
-	OR	shift 37
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	DELIM	reduce by rule 11
+	AND	shift 37
+	OR	shift 36
+
+
+	.	error
+
+
+state 55:
+
+	decleration : VAR varlist COLON Type . DELIM 
+
+	DELIM	shift 75
 
 
 	.	error
@@ -1037,9 +1036,9 @@ state 55:
 
 state 56:
 
-	decleration : VAR varlist COLON Type . DELIM 
+	Type : BOOL .  (reduce by rule 4)
 
-	DELIM	shift 76
+	DELIM	reduce by rule 4
 
 
 	.	error
@@ -1047,7 +1046,7 @@ state 56:
 
 state 57:
 
-	Type : BOOL .  (reduce by rule 5)
+	Type : INTEGER .  (reduce by rule 5)
 
 	DELIM	reduce by rule 5
 
@@ -1057,9 +1056,9 @@ state 57:
 
 state 58:
 
-	Type : INTEGER .  (reduce by rule 6)
+	varlist : IDENTIFIER COMMA varlist .  (reduce by rule 7)
 
-	DELIM	reduce by rule 6
+	COLON	reduce by rule 7
 
 
 	.	error
@@ -1067,9 +1066,38 @@ state 58:
 
 state 59:
 
-	varlist : IDENTIFIER COMMA varlist .  (reduce by rule 8)
+	expression : expression . LT expression 
+	expression : expression . LEQ expression 
+	expression : expression . EQ expression 
+	expression : expression . GT expression 
+	expression : expression . GEQ expression 
+	expression : expression . NEQ expression 
+	expression : expression . AND expression 
+	expression : expression . OR expression 
+	expression : expression OR expression .  (reduce by rule 23)
+	expression : expression . PLUS expression 
+	expression : expression . MINUS expression 
+	expression : expression . TIMES expression 
+	expression : expression . DIV expression 
+	expression : expression . MOD expression 
 
-	COLON	reduce by rule 8
+	THEN	reduce by rule 23
+	DO	reduce by rule 23
+	PLUS	reduce by rule 23
+	MINUS	reduce by rule 23
+	TIMES	reduce by rule 23
+	DIV	reduce by rule 23
+	MOD	reduce by rule 23
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	reduce by rule 23
+	DELIM	reduce by rule 23
+	AND	shift 37
+	OR	reduce by rule 23
 
 
 	.	error
@@ -1084,31 +1112,31 @@ state 60:
 	expression : expression . GEQ expression 
 	expression : expression . NEQ expression 
 	expression : expression . AND expression 
+	expression : expression AND expression .  (reduce by rule 22)
 	expression : expression . OR expression 
-	expression : expression OR expression .  (reduce by rule 24)
 	expression : expression . PLUS expression 
 	expression : expression . MINUS expression 
 	expression : expression . TIMES expression 
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
 
-	THEN	reduce by rule 24
-	DO	reduce by rule 24
-	PLUS	reduce by rule 24
-	MINUS	reduce by rule 24
-	TIMES	reduce by rule 24
-	DIV	reduce by rule 24
-	MOD	reduce by rule 24
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	reduce by rule 24
-	DELIM	reduce by rule 24
-	AND	shift 38
-	OR	reduce by rule 24
+	THEN	reduce by rule 22
+	DO	reduce by rule 22
+	PLUS	reduce by rule 22
+	MINUS	reduce by rule 22
+	TIMES	reduce by rule 22
+	DIV	reduce by rule 22
+	MOD	reduce by rule 22
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	reduce by rule 22
+	DELIM	reduce by rule 22
+	AND	reduce by rule 22
+	OR	reduce by rule 22
 
 
 	.	error
@@ -1121,124 +1149,7 @@ state 61:
 	expression : expression . EQ expression 
 	expression : expression . GT expression 
 	expression : expression . GEQ expression 
-	expression : expression . NEQ expression 
-	expression : expression . AND expression 
-	expression : expression AND expression .  (reduce by rule 23)
-	expression : expression . OR expression 
-	expression : expression . PLUS expression 
-	expression : expression . MINUS expression 
-	expression : expression . TIMES expression 
-	expression : expression . DIV expression 
-	expression : expression . MOD expression 
-
-	THEN	reduce by rule 23
-	DO	reduce by rule 23
-	PLUS	reduce by rule 23
-	MINUS	reduce by rule 23
-	TIMES	reduce by rule 23
-	DIV	reduce by rule 23
-	MOD	reduce by rule 23
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	reduce by rule 23
-	DELIM	reduce by rule 23
-	AND	reduce by rule 23
-	OR	reduce by rule 23
-
-
-	.	error
-
-
-state 62:
-
-	expression : expression . LT expression 
-	expression : expression . LEQ expression 
-	expression : expression . EQ expression 
-	expression : expression . GT expression 
-	expression : expression . GEQ expression 
-	expression : expression GEQ expression .  (reduce by rule 21)
-	expression : expression . NEQ expression 
-	expression : expression . AND expression 
-	expression : expression . OR expression 
-	expression : expression . PLUS expression 
-	expression : expression . MINUS expression 
-	expression : expression . TIMES expression 
-	expression : expression . DIV expression 
-	expression : expression . MOD expression 
-
-	THEN	reduce by rule 21
-	DO	reduce by rule 21
-	PLUS	reduce by rule 21
-	MINUS	reduce by rule 21
-	TIMES	reduce by rule 21
-	DIV	reduce by rule 21
-	MOD	reduce by rule 21
-	EQ	reduce by rule 21
-	NEQ	reduce by rule 21
-	LT	reduce by rule 21
-	GT	reduce by rule 21
-	LEQ	reduce by rule 21
-	GEQ	reduce by rule 21
-	RPAREN	reduce by rule 21
-	DELIM	reduce by rule 21
-	AND	reduce by rule 21
-	OR	reduce by rule 21
-
-
-	.	error
-
-
-state 63:
-
-	expression : expression . LT expression 
-	expression : expression . LEQ expression 
-	expression : expression LEQ expression .  (reduce by rule 18)
-	expression : expression . EQ expression 
-	expression : expression . GT expression 
-	expression : expression . GEQ expression 
-	expression : expression . NEQ expression 
-	expression : expression . AND expression 
-	expression : expression . OR expression 
-	expression : expression . PLUS expression 
-	expression : expression . MINUS expression 
-	expression : expression . TIMES expression 
-	expression : expression . DIV expression 
-	expression : expression . MOD expression 
-
-	THEN	reduce by rule 18
-	DO	reduce by rule 18
-	PLUS	reduce by rule 18
-	MINUS	reduce by rule 18
-	TIMES	reduce by rule 18
-	DIV	reduce by rule 18
-	MOD	reduce by rule 18
-	EQ	reduce by rule 18
-	NEQ	reduce by rule 18
-	LT	reduce by rule 18
-	GT	reduce by rule 18
-	LEQ	reduce by rule 18
-	GEQ	reduce by rule 18
-	RPAREN	reduce by rule 18
-	DELIM	reduce by rule 18
-	AND	reduce by rule 18
-	OR	reduce by rule 18
-
-
-	.	error
-
-
-state 64:
-
-	expression : expression . LT expression 
-	expression : expression . LEQ expression 
-	expression : expression . EQ expression 
-	expression : expression . GT expression 
-	expression : expression GT expression .  (reduce by rule 20)
-	expression : expression . GEQ expression 
+	expression : expression GEQ expression .  (reduce by rule 20)
 	expression : expression . NEQ expression 
 	expression : expression . AND expression 
 	expression : expression . OR expression 
@@ -1270,11 +1181,11 @@ state 64:
 	.	error
 
 
-state 65:
+state 62:
 
 	expression : expression . LT expression 
-	expression : expression LT expression .  (reduce by rule 17)
 	expression : expression . LEQ expression 
+	expression : expression LEQ expression .  (reduce by rule 17)
 	expression : expression . EQ expression 
 	expression : expression . GT expression 
 	expression : expression . GEQ expression 
@@ -1309,52 +1220,13 @@ state 65:
 	.	error
 
 
-state 66:
+state 63:
 
 	expression : expression . LT expression 
 	expression : expression . LEQ expression 
 	expression : expression . EQ expression 
 	expression : expression . GT expression 
-	expression : expression . GEQ expression 
-	expression : expression . NEQ expression 
-	expression : expression NEQ expression .  (reduce by rule 22)
-	expression : expression . AND expression 
-	expression : expression . OR expression 
-	expression : expression . PLUS expression 
-	expression : expression . MINUS expression 
-	expression : expression . TIMES expression 
-	expression : expression . DIV expression 
-	expression : expression . MOD expression 
-
-	THEN	reduce by rule 22
-	DO	reduce by rule 22
-	PLUS	reduce by rule 22
-	MINUS	reduce by rule 22
-	TIMES	reduce by rule 22
-	DIV	reduce by rule 22
-	MOD	reduce by rule 22
-	EQ	reduce by rule 22
-	NEQ	reduce by rule 22
-	LT	reduce by rule 22
-	GT	reduce by rule 22
-	LEQ	reduce by rule 22
-	GEQ	reduce by rule 22
-	RPAREN	reduce by rule 22
-	DELIM	reduce by rule 22
-	AND	reduce by rule 22
-	OR	reduce by rule 22
-
-
-	.	error
-
-
-state 67:
-
-	expression : expression . LT expression 
-	expression : expression . LEQ expression 
-	expression : expression . EQ expression 
-	expression : expression EQ expression .  (reduce by rule 19)
-	expression : expression . GT expression 
+	expression : expression GT expression .  (reduce by rule 19)
 	expression : expression . GEQ expression 
 	expression : expression . NEQ expression 
 	expression : expression . AND expression 
@@ -1387,7 +1259,124 @@ state 67:
 	.	error
 
 
-state 68:
+state 64:
+
+	expression : expression . LT expression 
+	expression : expression LT expression .  (reduce by rule 16)
+	expression : expression . LEQ expression 
+	expression : expression . EQ expression 
+	expression : expression . GT expression 
+	expression : expression . GEQ expression 
+	expression : expression . NEQ expression 
+	expression : expression . AND expression 
+	expression : expression . OR expression 
+	expression : expression . PLUS expression 
+	expression : expression . MINUS expression 
+	expression : expression . TIMES expression 
+	expression : expression . DIV expression 
+	expression : expression . MOD expression 
+
+	THEN	reduce by rule 16
+	DO	reduce by rule 16
+	PLUS	reduce by rule 16
+	MINUS	reduce by rule 16
+	TIMES	reduce by rule 16
+	DIV	reduce by rule 16
+	MOD	reduce by rule 16
+	EQ	reduce by rule 16
+	NEQ	reduce by rule 16
+	LT	reduce by rule 16
+	GT	reduce by rule 16
+	LEQ	reduce by rule 16
+	GEQ	reduce by rule 16
+	RPAREN	reduce by rule 16
+	DELIM	reduce by rule 16
+	AND	reduce by rule 16
+	OR	reduce by rule 16
+
+
+	.	error
+
+
+state 65:
+
+	expression : expression . LT expression 
+	expression : expression . LEQ expression 
+	expression : expression . EQ expression 
+	expression : expression . GT expression 
+	expression : expression . GEQ expression 
+	expression : expression . NEQ expression 
+	expression : expression NEQ expression .  (reduce by rule 21)
+	expression : expression . AND expression 
+	expression : expression . OR expression 
+	expression : expression . PLUS expression 
+	expression : expression . MINUS expression 
+	expression : expression . TIMES expression 
+	expression : expression . DIV expression 
+	expression : expression . MOD expression 
+
+	THEN	reduce by rule 21
+	DO	reduce by rule 21
+	PLUS	reduce by rule 21
+	MINUS	reduce by rule 21
+	TIMES	reduce by rule 21
+	DIV	reduce by rule 21
+	MOD	reduce by rule 21
+	EQ	reduce by rule 21
+	NEQ	reduce by rule 21
+	LT	reduce by rule 21
+	GT	reduce by rule 21
+	LEQ	reduce by rule 21
+	GEQ	reduce by rule 21
+	RPAREN	reduce by rule 21
+	DELIM	reduce by rule 21
+	AND	reduce by rule 21
+	OR	reduce by rule 21
+
+
+	.	error
+
+
+state 66:
+
+	expression : expression . LT expression 
+	expression : expression . LEQ expression 
+	expression : expression . EQ expression 
+	expression : expression EQ expression .  (reduce by rule 18)
+	expression : expression . GT expression 
+	expression : expression . GEQ expression 
+	expression : expression . NEQ expression 
+	expression : expression . AND expression 
+	expression : expression . OR expression 
+	expression : expression . PLUS expression 
+	expression : expression . MINUS expression 
+	expression : expression . TIMES expression 
+	expression : expression . DIV expression 
+	expression : expression . MOD expression 
+
+	THEN	reduce by rule 18
+	DO	reduce by rule 18
+	PLUS	reduce by rule 18
+	MINUS	reduce by rule 18
+	TIMES	reduce by rule 18
+	DIV	reduce by rule 18
+	MOD	reduce by rule 18
+	EQ	reduce by rule 18
+	NEQ	reduce by rule 18
+	LT	reduce by rule 18
+	GT	reduce by rule 18
+	LEQ	reduce by rule 18
+	GEQ	reduce by rule 18
+	RPAREN	reduce by rule 18
+	DELIM	reduce by rule 18
+	AND	reduce by rule 18
+	OR	reduce by rule 18
+
+
+	.	error
+
+
+state 67:
 
 	expression : expression . LT expression 
 	expression : expression . LEQ expression 
@@ -1402,25 +1391,64 @@ state 68:
 	expression : expression . TIMES expression 
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
-	expression : expression MOD expression .  (reduce by rule 29)
+	expression : expression MOD expression .  (reduce by rule 28)
 
-	THEN	reduce by rule 29
-	DO	reduce by rule 29
-	PLUS	reduce by rule 29
-	MINUS	reduce by rule 29
-	TIMES	reduce by rule 29
-	DIV	reduce by rule 29
-	MOD	reduce by rule 29
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	reduce by rule 29
-	DELIM	reduce by rule 29
-	AND	shift 38
-	OR	shift 37
+	THEN	reduce by rule 28
+	DO	reduce by rule 28
+	PLUS	reduce by rule 28
+	MINUS	reduce by rule 28
+	TIMES	reduce by rule 28
+	DIV	reduce by rule 28
+	MOD	reduce by rule 28
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	reduce by rule 28
+	DELIM	reduce by rule 28
+	AND	shift 37
+	OR	shift 36
+
+
+	.	error
+
+
+state 68:
+
+	expression : expression . LT expression 
+	expression : expression . LEQ expression 
+	expression : expression . EQ expression 
+	expression : expression . GT expression 
+	expression : expression . GEQ expression 
+	expression : expression . NEQ expression 
+	expression : expression . AND expression 
+	expression : expression . OR expression 
+	expression : expression . PLUS expression 
+	expression : expression . MINUS expression 
+	expression : expression . TIMES expression 
+	expression : expression . DIV expression 
+	expression : expression DIV expression .  (reduce by rule 27)
+	expression : expression . MOD expression 
+
+	THEN	reduce by rule 27
+	DO	reduce by rule 27
+	PLUS	reduce by rule 27
+	MINUS	reduce by rule 27
+	TIMES	reduce by rule 27
+	DIV	reduce by rule 27
+	MOD	reduce by rule 27
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	reduce by rule 27
+	DELIM	reduce by rule 27
+	AND	shift 37
+	OR	shift 36
 
 
 	.	error
@@ -1439,27 +1467,27 @@ state 69:
 	expression : expression . PLUS expression 
 	expression : expression . MINUS expression 
 	expression : expression . TIMES expression 
+	expression : expression TIMES expression .  (reduce by rule 26)
 	expression : expression . DIV expression 
-	expression : expression DIV expression .  (reduce by rule 28)
 	expression : expression . MOD expression 
 
-	THEN	reduce by rule 28
-	DO	reduce by rule 28
-	PLUS	reduce by rule 28
-	MINUS	reduce by rule 28
-	TIMES	reduce by rule 28
-	DIV	reduce by rule 28
-	MOD	reduce by rule 28
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	reduce by rule 28
-	DELIM	reduce by rule 28
-	AND	shift 38
-	OR	shift 37
+	THEN	reduce by rule 26
+	DO	reduce by rule 26
+	PLUS	reduce by rule 26
+	MINUS	reduce by rule 26
+	TIMES	reduce by rule 26
+	DIV	reduce by rule 26
+	MOD	reduce by rule 26
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	reduce by rule 26
+	DELIM	reduce by rule 26
+	AND	shift 37
+	OR	shift 36
 
 
 	.	error
@@ -1477,28 +1505,28 @@ state 70:
 	expression : expression . OR expression 
 	expression : expression . PLUS expression 
 	expression : expression . MINUS expression 
+	expression : expression MINUS expression .  (reduce by rule 25)
 	expression : expression . TIMES expression 
-	expression : expression TIMES expression .  (reduce by rule 27)
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
 
-	THEN	reduce by rule 27
-	DO	reduce by rule 27
-	PLUS	reduce by rule 27
-	MINUS	reduce by rule 27
-	TIMES	reduce by rule 27
-	DIV	reduce by rule 27
-	MOD	reduce by rule 27
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	reduce by rule 27
-	DELIM	reduce by rule 27
-	AND	shift 38
-	OR	shift 37
+	THEN	reduce by rule 25
+	DO	reduce by rule 25
+	PLUS	reduce by rule 25
+	MINUS	reduce by rule 25
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	reduce by rule 25
+	DELIM	reduce by rule 25
+	AND	shift 37
+	OR	shift 36
 
 
 	.	error
@@ -1515,29 +1543,29 @@ state 71:
 	expression : expression . AND expression 
 	expression : expression . OR expression 
 	expression : expression . PLUS expression 
+	expression : expression PLUS expression .  (reduce by rule 24)
 	expression : expression . MINUS expression 
-	expression : expression MINUS expression .  (reduce by rule 26)
 	expression : expression . TIMES expression 
 	expression : expression . DIV expression 
 	expression : expression . MOD expression 
 
-	THEN	reduce by rule 26
-	DO	reduce by rule 26
-	PLUS	reduce by rule 26
-	MINUS	reduce by rule 26
-	TIMES	shift 47
-	DIV	shift 46
-	MOD	shift 45
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	reduce by rule 26
-	DELIM	reduce by rule 26
-	AND	shift 38
-	OR	shift 37
+	THEN	reduce by rule 24
+	DO	reduce by rule 24
+	PLUS	reduce by rule 24
+	MINUS	reduce by rule 24
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
+	EQ	shift 43
+	NEQ	shift 42
+	LT	shift 41
+	GT	shift 40
+	LEQ	shift 39
+	GEQ	shift 38
+	RPAREN	reduce by rule 24
+	DELIM	reduce by rule 24
+	AND	shift 37
+	OR	shift 36
 
 
 	.	error
@@ -1545,38 +1573,9 @@ state 71:
 
 state 72:
 
-	expression : expression . LT expression 
-	expression : expression . LEQ expression 
-	expression : expression . EQ expression 
-	expression : expression . GT expression 
-	expression : expression . GEQ expression 
-	expression : expression . NEQ expression 
-	expression : expression . AND expression 
-	expression : expression . OR expression 
-	expression : expression . PLUS expression 
-	expression : expression PLUS expression .  (reduce by rule 25)
-	expression : expression . MINUS expression 
-	expression : expression . TIMES expression 
-	expression : expression . DIV expression 
-	expression : expression . MOD expression 
+	command : WHILE expression DO command_seq . ENDWH 
 
-	THEN	reduce by rule 25
-	DO	reduce by rule 25
-	PLUS	reduce by rule 25
-	MINUS	reduce by rule 25
-	TIMES	shift 47
-	DIV	shift 46
-	MOD	shift 45
-	EQ	shift 44
-	NEQ	shift 43
-	LT	shift 42
-	GT	shift 41
-	LEQ	shift 40
-	GEQ	shift 39
-	RPAREN	reduce by rule 25
-	DELIM	reduce by rule 25
-	AND	shift 38
-	OR	shift 37
+	ENDWH	shift 76
 
 
 	.	error
@@ -1584,9 +1583,25 @@ state 72:
 
 state 73:
 
-	command : WHILE expression DO command_seq . ENDWH 
+	expression : LPAREN expression RPAREN .  (reduce by rule 29)
 
-	ENDWH	shift 77
+	THEN	reduce by rule 29
+	DO	reduce by rule 29
+	PLUS	reduce by rule 29
+	MINUS	reduce by rule 29
+	TIMES	reduce by rule 29
+	DIV	reduce by rule 29
+	MOD	reduce by rule 29
+	EQ	reduce by rule 29
+	NEQ	reduce by rule 29
+	LT	reduce by rule 29
+	GT	reduce by rule 29
+	LEQ	reduce by rule 29
+	GEQ	reduce by rule 29
+	RPAREN	reduce by rule 29
+	DELIM	reduce by rule 29
+	AND	reduce by rule 29
+	OR	reduce by rule 29
 
 
 	.	error
@@ -1594,25 +1609,9 @@ state 73:
 
 state 74:
 
-	expression : LPAREN expression RPAREN .  (reduce by rule 30)
+	command : IF expression THEN command_seq . ELSE command_seq ENDIF 
 
-	THEN	reduce by rule 30
-	DO	reduce by rule 30
-	PLUS	reduce by rule 30
-	MINUS	reduce by rule 30
-	TIMES	reduce by rule 30
-	DIV	reduce by rule 30
-	MOD	reduce by rule 30
-	EQ	reduce by rule 30
-	NEQ	reduce by rule 30
-	LT	reduce by rule 30
-	GT	reduce by rule 30
-	LEQ	reduce by rule 30
-	GEQ	reduce by rule 30
-	RPAREN	reduce by rule 30
-	DELIM	reduce by rule 30
-	AND	reduce by rule 30
-	OR	reduce by rule 30
+	ELSE	shift 77
 
 
 	.	error
@@ -1620,9 +1619,16 @@ state 74:
 
 state 75:
 
-	command : IF expression THEN command_seq . ELSE command_seq ENDIF 
+	decleration : VAR varlist COLON Type DELIM .  (reduce by rule 3)
 
-	ELSE	shift 78
+	IDENTIFIER	reduce by rule 3
+	VAR	reduce by rule 3
+	READ	reduce by rule 3
+	WRITE	reduce by rule 3
+	IF	reduce by rule 3
+	WHILE	reduce by rule 3
+	LCURL	reduce by rule 3
+	EOF	reduce by rule 3
 
 
 	.	error
@@ -1630,62 +1636,7 @@ state 75:
 
 state 76:
 
-	decleration : VAR varlist COLON Type DELIM .  (reduce by rule 4)
-
-	IDENTIFIER	reduce by rule 4
-	VAR	reduce by rule 4
-	READ	reduce by rule 4
-	WRITE	reduce by rule 4
-	IF	reduce by rule 4
-	WHILE	reduce by rule 4
-	LCURL	reduce by rule 4
-	EOF	reduce by rule 4
-
-
-	.	error
-
-
-state 77:
-
-	command : WHILE expression DO command_seq ENDWH .  (reduce by rule 16)
-
-	DELIM	reduce by rule 16
-
-
-	.	error
-
-
-state 78:
-
-	command : IF expression THEN command_seq ELSE . command_seq ENDIF 
-
-	IDENTIFIER	shift 16
-	READ	shift 15
-	WRITE	shift 14
-	IF	shift 13
-	ENDIF	reduce by rule 11
-	WHILE	shift 12
-	LCURL	shift 11
-
-	command_seq	goto 79
-	command	goto 9
-
-	.	error
-
-
-state 79:
-
-	command : IF expression THEN command_seq ELSE command_seq . ENDIF 
-
-	ENDIF	shift 80
-
-
-	.	error
-
-
-state 80:
-
-	command : IF expression THEN command_seq ELSE command_seq ENDIF .  (reduce by rule 15)
+	command : WHILE expression DO command_seq ENDWH .  (reduce by rule 15)
 
 	DELIM	reduce by rule 15
 
@@ -1693,7 +1644,45 @@ state 80:
 	.	error
 
 
-state 81:
+state 77:
+
+	command : IF expression THEN command_seq ELSE . command_seq ENDIF 
+
+	IDENTIFIER	shift 15
+	READ	shift 14
+	WRITE	shift 13
+	IF	shift 12
+	ENDIF	reduce by rule 10
+	WHILE	shift 11
+	LCURL	shift 10
+
+	command_seq	goto 78
+	command	goto 8
+
+	.	error
+
+
+state 78:
+
+	command : IF expression THEN command_seq ELSE command_seq . ENDIF 
+
+	ENDIF	shift 79
+
+
+	.	error
+
+
+state 79:
+
+	command : IF expression THEN command_seq ELSE command_seq ENDIF .  (reduce by rule 14)
+
+	DELIM	reduce by rule 14
+
+
+	.	error
+
+
+state 80:
 
 
 	EOF	accept
@@ -1701,5 +1690,5 @@ state 81:
 
 	.	error
 
-522 of 746 action table entries left after compaction
-41 goto table entries
+521 of 744 action table entries left after compaction
+40 goto table entries

@@ -3,13 +3,11 @@ struct
 
 type id = string
 
-datatype Prog = Prog of id*Block
-and      Block = Block of (Dec list)*(Command list)
-and      Dec = Dec of (Var list)*dtypes
+datatype Prog = Prog of id*(Dec list)*(Command list)
+and      Dec = Dec of (id list)*dtypes
 and      dtypes = INTEGER|BOOL
-and      Var = Var of id
-and      Command = Set of Var*Exp
-                  |Read of Var
+and      Command = Set of id*Exp
+                  |Read of id
                   |Write of Exp
                   |ite of Exp*(Command list)*(Command list)
                   |while_exp of Exp*(Command list)
@@ -30,9 +28,9 @@ and      Exp =  LT of Exp*Exp|
                 NEG of Exp|
                 NUM of int|
                 BOOLEAN of bool|
-                Exp of Var
+                VAR of id
 
-fun print_Program (Prog(id,block):Prog) = (print(id);print_block(block))
+(* fun print_Program (Prog(id,block):Prog) = (print(id);print_block(block))
 
 and print_block(Block(declist,commseq):Block) = (print_DecList(declist);print_CommandSeq(commseq)) 
 
@@ -84,6 +82,6 @@ and print_exp(exp) =
         |MOD(exp1,exp2) => (print_exp(exp1);print("%");print_exp(exp2))
         |NEG(exp) => (print("~");print_exp(exp))
         |NUM(integer) => print(Int.toString(integer))
-        |BOOLEAN (boolean) => print(Bool.toString(boolean))
+        |BOOLEAN (boolean) => print(Bool.toString(boolean)) *)
 
 end

@@ -11,9 +11,7 @@ structure Tokens= Tokens
     val pos = ref 0
     val eof = fn () => Tokens.EOF(!pos, !linec)
 
-    fun throw (text,linec) = TextIO.output (TextIO.stdOut, String.concat[
-            "Error on line", (Int.toString linec),": ", text, "\n"
-        ])
+    fun throw (text,pos,linec) = print(String.concat[ "Error on line", (Int.toString linec),"at position",(Int.toString pos),": ", text, "\n" ])
 
 
   val keywords =
@@ -34,24 +32,27 @@ structure Tokens= Tokens
     ("tt",Tokens.BTRUE),
     ("ff",Tokens.BFALSE)
    ]
+
    fun getInt i = 
     case Int.fromString(i) of 
         SOME i => i
         | NONE   => 0
 
-  fun findKeywords(str,pos,linec) =
-  case List.find (fn (s, _) => s = str )  keywords of 
+  fun findKeywords(match,pos,linec) =
+  case List.find (fn (s, _) => s = match )  keywords of 
     SOME (_, token) => token(pos, linec) 
-  | NONE => Tokens.IDENTIFIER (str, pos,linec)
+  | NONE => Tokens.IDENTIFIER (match, pos,linec)
 
 fun init() = ()
 %%
 %header (functor WhileLexFun(structure Tokens : While_TOKENS));
+
 alpha=[A-Za-z];
 digit=[0-9];
-ws = [\ \t];
+ws = [\ |\t];
+
 %%
-[\n|\r\n]  => (linec := (!linec) + 1; lex());
+[\n|\r\n] => (linec := (!linec) + 1; lex());
 {ws}+    => (pos := !pos + size yytext;  lex());
 {digit}+ => (pos := !pos + size yytext;  Tokens.NUMBER((getInt yytext), !pos, !linec));
 "+"      => (pos := !pos + size yytext;  Tokens.PLUS(!pos, !linec));
@@ -70,7 +71,7 @@ ws = [\ \t];
 ")"      => (pos := !pos + size yytext;  Tokens.RPAREN(!pos, !linec));
 ":="     => (pos := !pos + size yytext;  Tokens.ASSN(!pos, !linec));
 ":"      => (pos := !pos + size yytext;  Tokens.COLON(!pos, !linec));
-"::"      => (pos := !pos + size yytext;  Tokens.SCOPE(!pos, !linec));
+"::"     => (pos := !pos + size yytext;  Tokens.SCOPE(!pos, !linec));
 ","      => (pos := !pos + size yytext;  Tokens.COMMA(!pos, !linec));
 ";"      => (pos := !pos + size yytext;  Tokens.DELIM(!pos, !linec));
 "&&"     => (pos := !pos + size yytext;  Tokens.AND(!pos, !linec));
@@ -79,4 +80,4 @@ ws = [\ \t];
 "{"      => (pos := !pos + size yytext;  Tokens.LCURL(!pos, !linec));
 "}"      => (pos := !pos + size yytext;  Tokens.RCURL(!pos, !linec));
 [A-Za-z][A-Za-z0-9]* => (pos := !pos + size yytext;  findKeywords(yytext,!pos, !linec));
-.      => (throw(yytext, !linec); pos := !pos + size yytext;  lex());
+.      => (throw(yytext, !pos, !linec); pos := !pos + size yytext;  lex());
