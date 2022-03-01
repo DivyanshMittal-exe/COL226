@@ -3,47 +3,20 @@ structure Tokens= Tokens
     type svalue = Tokens.svalue
     type ('a,'b) token = ('a,'b) Tokens.token  
     type lexresult = (svalue, pos) token
-    type lexarg = string
-    type arg = lexarg
-
-
     val linec= ref 0
     val pos = ref 0
     val eof = fn () => Tokens.EOF(!pos, !linec)
 
     fun throw (text,pos,linec) = print(String.concat[ "Error on line", (Int.toString linec),"at position",(Int.toString pos),": ", text, "\n" ])
 
+    fun getInt i = 
+      case Int.fromString(i) of 
+          SOME i => i
+          | NONE => 0
 
-  val keywords =
-  [
-   ("program",Tokens.PROGRAM),
-    ("var",Tokens.VAR),
-    ("int",Tokens.INTEGER),
-    ("bool",Tokens.BOOL),
-    ("read",Tokens.READ),
-    ("write",Tokens.WRITE),
-    ("if",Tokens.IF),
-    ("then",Tokens.THEN),
-    ("else",Tokens.ELSE),
-    ("endif",Tokens.ENDIF),
-    ("while",Tokens.WHILE),
-    ("do",Tokens.DO),
-    ("endwh",Tokens.ENDWH),
-    ("tt",Tokens.BTRUE),
-    ("ff",Tokens.BFALSE)
-   ]
 
-   fun getInt i = 
-    case Int.fromString(i) of 
-        SOME i => i
-        | NONE   => 0
+    fun init() = ()
 
-  fun findKeywords(match,pos,linec) =
-  case List.find (fn (s, _) => s = match )  keywords of 
-    SOME (_, token) => token(pos, linec) 
-  | NONE => Tokens.IDENTIFIER (match, pos,linec)
-
-fun init() = ()
 %%
 %header (functor WhileLexFun(structure Tokens : While_TOKENS));
 
@@ -79,5 +52,20 @@ ws = [\ |\t];
 "!"      => (pos := !pos + size yytext;  Tokens.NOT(!pos, !linec));
 "{"      => (pos := !pos + size yytext;  Tokens.LCURL(!pos, !linec));
 "}"      => (pos := !pos + size yytext;  Tokens.RCURL(!pos, !linec));
-[A-Za-z][A-Za-z0-9]* => (pos := !pos + size yytext;  findKeywords(yytext,!pos, !linec));
+"program"=> (pos := !pos + size yytext;  Tokens.PROGRAM(!pos, !linec));
+"var"    => (pos := !pos + size yytext;  Tokens.VAR(!pos, !linec));
+"int"    => (pos := !pos + size yytext;  Tokens.INTEGER(!pos, !linec));
+"bool"   => (pos := !pos + size yytext;  Tokens.BOOL(!pos, !linec));
+"read"   => (pos := !pos + size yytext;  Tokens.READ(!pos, !linec));
+"write"  => (pos := !pos + size yytext;  Tokens.WRITE(!pos, !linec));
+"if"     => (pos := !pos + size yytext;  Tokens.IF(!pos, !linec));
+"then"   => (pos := !pos + size yytext;  Tokens.THEN(!pos, !linec));
+"else"   => (pos := !pos + size yytext;  Tokens.ELSE(!pos, !linec));
+"endif"  => (pos := !pos + size yytext;  Tokens.ENDIF(!pos, !linec));
+"while"  => (pos := !pos + size yytext;  Tokens.WHILE(!pos, !linec));
+"do"     => (pos := !pos + size yytext;  Tokens.DO(!pos, !linec));
+"endwh"  => (pos := !pos + size yytext;  Tokens.ENDWH(!pos, !linec));
+"tt"     => (pos := !pos + size yytext;  Tokens.BTRUE(!pos, !linec));
+"ff"     => (pos := !pos + size yytext;  Tokens.BFALSE(!pos, !linec));
+[A-Za-z][A-Za-z0-9]* => (pos := !pos + size yytext;  Tokens.IDENTIFIER(yytext,!pos, !linec));
 .      => (throw(yytext, !pos, !linec); pos := !pos + size yytext;  lex());

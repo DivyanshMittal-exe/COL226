@@ -6,6 +6,8 @@ structure WhileParser =
     structure ParserData = WhileLrVals.ParserData
     structure Lex = WhileLex)
 
+exception typeMismatchError
+
 val invoke = fn lexstream => 
     let val print_error = fn (text,pos,linec) => print(String.concat[ "Error on line", (Int.toString linec),"at position",(Int.toString pos),": ", text, "\n" ])
     in 
@@ -37,6 +39,13 @@ fun lexerToParser (lexer) =
             (print("Input Not consumed");result)
     end
 
-val parseFile = lexerToParser o fileToLexer
-
+fun parseFile  filename = 
+    let
+      val ast_made = lexerToParser (fileToLexer (filename))
+    in
+      if typecheck ast_made  = true then 
+        ast_made
+      else 
+        raise typeMismatchError
+    end
 end

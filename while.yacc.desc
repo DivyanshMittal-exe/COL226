@@ -875,11 +875,11 @@ state 50:
 
 	THEN	reduce by rule 31
 	DO	reduce by rule 31
-	PLUS	reduce by rule 31
-	MINUS	reduce by rule 31
-	TIMES	reduce by rule 31
-	DIV	reduce by rule 31
-	MOD	reduce by rule 31
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
 	EQ	shift 43
 	NEQ	shift 42
 	LT	shift 41
@@ -955,16 +955,16 @@ state 52:
 	TIMES	reduce by rule 30
 	DIV	reduce by rule 30
 	MOD	reduce by rule 30
-	EQ	shift 43
-	NEQ	shift 42
-	LT	shift 41
-	GT	shift 40
-	LEQ	shift 39
-	GEQ	shift 38
+	EQ	reduce by rule 30
+	NEQ	reduce by rule 30
+	LT	reduce by rule 30
+	GT	reduce by rule 30
+	LEQ	reduce by rule 30
+	GEQ	reduce by rule 30
 	RPAREN	reduce by rule 30
 	DELIM	reduce by rule 30
-	AND	shift 37
-	OR	shift 36
+	AND	reduce by rule 30
+	OR	reduce by rule 30
 
 
 	.	error
@@ -1083,11 +1083,11 @@ state 59:
 
 	THEN	reduce by rule 23
 	DO	reduce by rule 23
-	PLUS	reduce by rule 23
-	MINUS	reduce by rule 23
-	TIMES	reduce by rule 23
-	DIV	reduce by rule 23
-	MOD	reduce by rule 23
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
 	EQ	shift 43
 	NEQ	shift 42
 	LT	shift 41
@@ -1122,11 +1122,11 @@ state 60:
 
 	THEN	reduce by rule 22
 	DO	reduce by rule 22
-	PLUS	reduce by rule 22
-	MINUS	reduce by rule 22
-	TIMES	reduce by rule 22
-	DIV	reduce by rule 22
-	MOD	reduce by rule 22
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
 	EQ	shift 43
 	NEQ	shift 42
 	LT	shift 41
@@ -1161,11 +1161,11 @@ state 61:
 
 	THEN	reduce by rule 20
 	DO	reduce by rule 20
-	PLUS	reduce by rule 20
-	MINUS	reduce by rule 20
-	TIMES	reduce by rule 20
-	DIV	reduce by rule 20
-	MOD	reduce by rule 20
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
 	EQ	reduce by rule 20
 	NEQ	reduce by rule 20
 	LT	reduce by rule 20
@@ -1200,11 +1200,11 @@ state 62:
 
 	THEN	reduce by rule 17
 	DO	reduce by rule 17
-	PLUS	reduce by rule 17
-	MINUS	reduce by rule 17
-	TIMES	reduce by rule 17
-	DIV	reduce by rule 17
-	MOD	reduce by rule 17
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
 	EQ	reduce by rule 17
 	NEQ	reduce by rule 17
 	LT	reduce by rule 17
@@ -1239,11 +1239,11 @@ state 63:
 
 	THEN	reduce by rule 19
 	DO	reduce by rule 19
-	PLUS	reduce by rule 19
-	MINUS	reduce by rule 19
-	TIMES	reduce by rule 19
-	DIV	reduce by rule 19
-	MOD	reduce by rule 19
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
 	EQ	reduce by rule 19
 	NEQ	reduce by rule 19
 	LT	reduce by rule 19
@@ -1278,11 +1278,11 @@ state 64:
 
 	THEN	reduce by rule 16
 	DO	reduce by rule 16
-	PLUS	reduce by rule 16
-	MINUS	reduce by rule 16
-	TIMES	reduce by rule 16
-	DIV	reduce by rule 16
-	MOD	reduce by rule 16
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
 	EQ	reduce by rule 16
 	NEQ	reduce by rule 16
 	LT	reduce by rule 16
@@ -1317,11 +1317,11 @@ state 65:
 
 	THEN	reduce by rule 21
 	DO	reduce by rule 21
-	PLUS	reduce by rule 21
-	MINUS	reduce by rule 21
-	TIMES	reduce by rule 21
-	DIV	reduce by rule 21
-	MOD	reduce by rule 21
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
 	EQ	reduce by rule 21
 	NEQ	reduce by rule 21
 	LT	reduce by rule 21
@@ -1356,11 +1356,11 @@ state 66:
 
 	THEN	reduce by rule 18
 	DO	reduce by rule 18
-	PLUS	reduce by rule 18
-	MINUS	reduce by rule 18
-	TIMES	reduce by rule 18
-	DIV	reduce by rule 18
-	MOD	reduce by rule 18
+	PLUS	shift 48
+	MINUS	shift 47
+	TIMES	shift 46
+	DIV	shift 45
+	MOD	shift 44
 	EQ	reduce by rule 18
 	NEQ	reduce by rule 18
 	LT	reduce by rule 18
@@ -1400,16 +1400,16 @@ state 67:
 	TIMES	reduce by rule 28
 	DIV	reduce by rule 28
 	MOD	reduce by rule 28
-	EQ	shift 43
-	NEQ	shift 42
-	LT	shift 41
-	GT	shift 40
-	LEQ	shift 39
-	GEQ	shift 38
+	EQ	reduce by rule 28
+	NEQ	reduce by rule 28
+	LT	reduce by rule 28
+	GT	reduce by rule 28
+	LEQ	reduce by rule 28
+	GEQ	reduce by rule 28
 	RPAREN	reduce by rule 28
 	DELIM	reduce by rule 28
-	AND	shift 37
-	OR	shift 36
+	AND	reduce by rule 28
+	OR	reduce by rule 28
 
 
 	.	error
@@ -1439,16 +1439,16 @@ state 68:
 	TIMES	reduce by rule 27
 	DIV	reduce by rule 27
 	MOD	reduce by rule 27
-	EQ	shift 43
-	NEQ	shift 42
-	LT	shift 41
-	GT	shift 40
-	LEQ	shift 39
-	GEQ	shift 38
+	EQ	reduce by rule 27
+	NEQ	reduce by rule 27
+	LT	reduce by rule 27
+	GT	reduce by rule 27
+	LEQ	reduce by rule 27
+	GEQ	reduce by rule 27
 	RPAREN	reduce by rule 27
 	DELIM	reduce by rule 27
-	AND	shift 37
-	OR	shift 36
+	AND	reduce by rule 27
+	OR	reduce by rule 27
 
 
 	.	error
@@ -1478,16 +1478,16 @@ state 69:
 	TIMES	reduce by rule 26
 	DIV	reduce by rule 26
 	MOD	reduce by rule 26
-	EQ	shift 43
-	NEQ	shift 42
-	LT	shift 41
-	GT	shift 40
-	LEQ	shift 39
-	GEQ	shift 38
+	EQ	reduce by rule 26
+	NEQ	reduce by rule 26
+	LT	reduce by rule 26
+	GT	reduce by rule 26
+	LEQ	reduce by rule 26
+	GEQ	reduce by rule 26
 	RPAREN	reduce by rule 26
 	DELIM	reduce by rule 26
-	AND	shift 37
-	OR	shift 36
+	AND	reduce by rule 26
+	OR	reduce by rule 26
 
 
 	.	error
@@ -1517,16 +1517,16 @@ state 70:
 	TIMES	shift 46
 	DIV	shift 45
 	MOD	shift 44
-	EQ	shift 43
-	NEQ	shift 42
-	LT	shift 41
-	GT	shift 40
-	LEQ	shift 39
-	GEQ	shift 38
+	EQ	reduce by rule 25
+	NEQ	reduce by rule 25
+	LT	reduce by rule 25
+	GT	reduce by rule 25
+	LEQ	reduce by rule 25
+	GEQ	reduce by rule 25
 	RPAREN	reduce by rule 25
 	DELIM	reduce by rule 25
-	AND	shift 37
-	OR	shift 36
+	AND	reduce by rule 25
+	OR	reduce by rule 25
 
 
 	.	error
@@ -1556,16 +1556,16 @@ state 71:
 	TIMES	shift 46
 	DIV	shift 45
 	MOD	shift 44
-	EQ	shift 43
-	NEQ	shift 42
-	LT	shift 41
-	GT	shift 40
-	LEQ	shift 39
-	GEQ	shift 38
+	EQ	reduce by rule 24
+	NEQ	reduce by rule 24
+	LT	reduce by rule 24
+	GT	reduce by rule 24
+	LEQ	reduce by rule 24
+	GEQ	reduce by rule 24
 	RPAREN	reduce by rule 24
 	DELIM	reduce by rule 24
-	AND	shift 37
-	OR	shift 36
+	AND	reduce by rule 24
+	OR	reduce by rule 24
 
 
 	.	error

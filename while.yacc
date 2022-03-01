@@ -28,19 +28,18 @@ open AST
   | decleration of Dec 
   | command_seq of Command list
   | command of Command
-  | varlist of id list
-  | var of id
+  | varlist of string list
+  | var of string
   | expression of Exp
   | Type of dtypes
 
-%left PLUS MINUS
-%left TIMES DIV MOD
-%right NEG
 %left OR
 %left AND
 %right NOT
 %left LT LEQ EQ GT GEQ NEQ 
-
+%left PLUS MINUS
+%left TIMES DIV MOD
+%right NEG
 
 %start srt
 

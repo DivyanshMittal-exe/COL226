@@ -2,7 +2,7 @@ program chad ::
 
 var a,b,c : int ;var d,e,f : bool;
 {   
-    a := 1 + 2 - 3*4/5%6 ;
+    a := 5 + tt ;
     d := tt;
     read b;
     write 1+3;
