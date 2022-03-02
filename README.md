@@ -5,20 +5,19 @@ Since the given EBNF has reduce reduce conflicts, for a) bool exp and int exp , 
 
 To make sure precedence is followed, that the grammar given specifies, we use the Yacc's feature of specifying precedence. 
 
-## Semantic directed translations
-
-
 ## Running the code
 
 To parse and create an AST file run 
     ```
         make
+
         parseFile "filename";
     ```
 
 To parse and create an AST file without type checking run 
     ```
         make
+
         parseFileNTC "filename";
     ```
 
@@ -119,6 +118,59 @@ and      Exp =  LT of Exp*Exp|
                 NUM of int|
                 BOOLEAN of bool|
                 VAR of string
+```
+## Semantic directed translations
+```
+srt: PROGRAM IDENTIFIER SCOPE decleration_seq command_seq ((Prog(IDENTIFIER,decleration_seq,command_seq)))
+
+decleration_seq: decleration decleration_seq ((decleration::decleration_seq))
+      |                      ([])
+
+decleration: VAR varlist COLON Type DELIM ((Dec(varlist,Type)))
+
+Type: BOOL ((BOOL))
+      |INTEGER ((INTEGER))
+
+varlist : IDENTIFIER ([IDENTIFIER])
+        | IDENTIFIER COMMA varlist ((IDENTIFIER::varlist))
+
+command_seq: LCURL command_seq RCURL ((command_seq))
+
+
+command_seq: command DELIM command_seq ((command::command_seq))
+            |                           ([])
+    
+command: IDENTIFIER ASSN expression ((Set(IDENTIFIER,expression)))
+        | READ IDENTIFIER ((Read(IDENTIFIER)))
+        | WRITE expression ((Write(expression)))
+        |IF expression THEN command_seq ELSE command_seq ENDIF ((ite(expression,command_seq1,command_seq2)))
+        |WHILE expression DO command_seq ENDWH ((while_exp
+        (expression,command_seq)))
+
+
+expression:
+        expression LT expression ((LT(expression1,expression2)))
+      | expression LEQ expression ((LEQ(expression1,expression2)))
+      | expression EQ expression ((EQ(expression1,expression2)))
+      | expression GT expression ((GT(expression1,expression2)))
+      | expression GEQ expression ((GEQ(expression1,expression2)))
+      | expression NEQ expression ((NEQ(expression1,expression2)))
+      | expression AND expression ((AND(expression1,expression2)))
+      | expression OR expression ((OR(expression1,expression2)))
+      | expression PLUS expression ((PLUS(expression1,expression2)))
+      | expression MINUS expression ((MINUS(expression1,expression2)))
+      | expression TIMES expression ((TIMES(expression1,expression2)))
+      | expression DIV expression ((DIV(expression1,expression2)))
+      | expression MOD expression ((MOD(expression1,expression2)))
+
+      | LPAREN expression RPAREN ((expression))
+
+      | NEG expression ((NEG(expression)))
+      | NOT expression ((NOT(expression)))
+      | BTRUE ((BOOLEAN(true)))
+      | BFALSE ((BOOLEAN(false)))
+      | NUMBER ((NUM(NUMBER)))
+      | IDENTIFIER ((VAR(IDENTIFIER)))
 ```
 
 ## Test Code
