@@ -7,7 +7,7 @@ use "while.lex.sml";
 use "typechecking.sml";
 use "evaluator.sml";
 use "whileinterface.sml";
-Control.Print.printLength := 100; 
+Control.Print.printLength := 1000; 
 Control.Print.printDepth := 100; 
 Control.Print.stringDepth := 100;
 open While;

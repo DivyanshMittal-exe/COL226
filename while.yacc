@@ -43,15 +43,11 @@ open AST
 
 %start srt
 
-%keyword
-
 %eop EOF
 
 %noshift EOF
 
 %nodefault
-
-%verbose
 
 
 %%

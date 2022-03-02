@@ -20,14 +20,10 @@ structure Tokens= Tokens
 %%
 %header (functor WhileLexFun(structure Tokens : While_TOKENS));
 
-alpha=[A-Za-z];
-digit=[0-9];
-ws = [\ |\t];
-
 %%
-[\n|\r\n] => (linec := (!linec) + 1; lex());
-{ws}+    => (pos := !pos + size yytext;  lex());
-{digit}+ => (pos := !pos + size yytext;  Tokens.NUMBER((getInt yytext), !pos, !linec));
+[\n|\r\n] => (linec := !linec + 1; lex());
+[\ |\t]+    => (pos := !pos + size yytext;  lex());
+[0-9]+ => (pos := !pos + size yytext;  Tokens.NUMBER((getInt yytext), !pos, !linec));
 "+"      => (pos := !pos + size yytext;  Tokens.PLUS(!pos, !linec));
 "-"      => (pos := !pos + size yytext;  Tokens.MINUS(!pos, !linec)); 
 "*"      => (pos := !pos + size yytext;  Tokens.TIMES(!pos, !linec));
