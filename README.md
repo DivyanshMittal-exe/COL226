@@ -197,3 +197,6 @@ val it =
 
 
 
+## Acknowledgements
+
+While no code has been copied from any source as such, to learn about ml-yacc and ml-lex, I followed 2 pdfs, and a lot of my design choices have been influenced by their examples. The 2 pdfs were [Pdf from profs Website](http://rogerprice.org/ug/ug.pdf) and [This pdf on ml-yacc](http://cs.wellesley.edu/~cs235/fall08/lectures/35_YACC_revised.pdf). For the glue code that is whileinterface.sml and for loading sml in ```load-while.sml``` I took how to write the syntax from the second pdf. Nothing was blindly copy pasted though. To convert my ebnf to railroad, I used this [website](https://matthijsgroen.github.io/ebnf2railroad/)
