@@ -1,5 +1,28 @@
 # COL 226: Programming Languages
 
+## Design and Implementation Decisions
+Since the given EBNF has reduce reduce conflicts, for a) bool exp and int exp , b) negation of a number become ambigous . Along with it, since we need to support expressions like tt < ff, we need to modify the language The concept of having bool exp,bool factor, int exp etc have all been changed to one single "expression". To check the validity of a statement, I have implemented a type checker. It essentially keeps a list of tuple of (variable name, type) and makes sure that when a binary operation or unary operation is done on an expression then that is correct type. Eg if we have Expression + Expression, where one is of integer type and other a bool, this throws an error. To remove the negation problem, any integer is read as it is, and if a ~ character is present in front, it gets read seperately as a NEG token. Thus both these conflicts are resolved. 
+
+To make sure precedence is followed, that the grammar given specifies, we use the Yacc's feature of specifying precedence. 
+
+## Semantic directed translations
+
+
+## Running the code
+
+To parse and create an AST file run 
+    ```
+        make
+        parseFile "filename";
+    ```
+
+To parse and create an AST file without type checking run 
+    ```
+        make
+        parseFileNTC "filename";
+    ```
+
+
 ## Context Free Grammar
 
 Below is the EBNF of the grammar I implement as EBNF
@@ -97,3 +120,28 @@ and      Exp =  LT of Exp*Exp|
                 BOOLEAN of bool|
                 VAR of string
 ```
+
+## Test Code
+### While code
+```
+    program chad :: 
+
+    var a,b,c : int ;var d,e,f : bool;
+    {   
+        b := 0;
+        while  b <> 5 do { write b; b := b + 1;} endwh;
+    }
+```
+### AST OutpuT
+```
+val it =
+  Prog
+    ("chad",[Dec (["a","b","c"],INTEGER),Dec (["d","e","f"],BOOL)],
+     [Set ("b",NUM 0),
+      while_exp
+        (NEQ (VAR "b",NUM 5),[Write (VAR "b"),Set ("b",PLUS (VAR "b",NUM 1))])])
+  : WhileParser.result
+```
+
+
+

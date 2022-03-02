@@ -35,11 +35,11 @@ open AST
 
 %left OR
 %left AND
-%right NOT
 %left LT LEQ EQ GT GEQ NEQ 
 %left PLUS MINUS
 %left TIMES DIV MOD
-%right NEG
+%right NEG NOT
+%left LPAREN RPAREN
 
 %start srt
 

@@ -2,6 +2,6 @@ program chad ::
 
 var a,b,c : int ;var d,e,f : bool;
 {   
-    read b;
-    write b;
+    b := 0;
+    while  b <> 5 do { write b; b := b + 1;} endwh;
 }

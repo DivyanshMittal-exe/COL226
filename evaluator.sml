@@ -62,18 +62,20 @@ and evalCommand (com,vlist) =
     |(Write(exp)) => (print(Int.toString(evalexp(exp,vlist))^"\n");vlist)
     |ite(exp,command_seq1,command_seq2)=>
         if evalexp(exp,vlist) = 1 then evalCommandSeq(command_seq1,vlist) else evalCommandSeq(command_seq2,vlist)
-    |while_exp(exp,command_seq)=>
-        let
-          val variableList = vlist
-          val whileLooping = while (evalexp(exp,variableList) = 0) do (variableList = evalCommandSeq(command_seq,variableList))
-        in
-          variableList
-        end
+    |while_exp(exp,command_seq)=> evalLoop (exp,command_seq,vlist)
+
+
+and evalLoop (exp,command_seq,variableList) = 
+    if evalexp(exp,variableList) <> 0 then 
+        evalLoop(exp,command_seq,evalCommandSeq(command_seq,variableList))
+    else 
+        variableList
+
 
 
  and evalexp (expression,vlist) = 
     case expression of
-    LT(exp1,exp2) =>if evalexp(exp1,vlist) < evalexp(exp2,vlist) then 1 else 0
+       LT(exp1,exp2) =>if evalexp(exp1,vlist) < evalexp(exp2,vlist) then 1 else 0
     | (LEQ(exp1,exp2)) => if evalexp(exp1,vlist) <= evalexp(exp2,vlist) then 1 else 0
     | (EQ(exp1,exp2)) => if evalexp(exp1,vlist) =  evalexp(exp2,vlist) then 1 else 0
     | (GT(exp1,exp2)) => if evalexp(exp1,vlist) > evalexp(exp2,vlist) then 1 else 0

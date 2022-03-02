@@ -5,7 +5,7 @@ all:
 	parseFile "test";
 
 clean:
-	-rm -f while.yacc.sml
-	-rm -f while.yacc.desc
-	-rm -f while.yacc.sig
-	-rm -f while.lex.sml
+	rm -rf while.yacc.sml
+	rm -rf while.yacc.desc
+	rm -rf while.yacc.sig
+	rm -rf while.lex.sml
