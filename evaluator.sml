@@ -31,12 +31,12 @@ fun getText dat =
 fun evaluate prog = 
     evaluateprog prog
 
-and evaluateprog (Prog(_,decleration_seq,command_seq)) =
+and evaluateprog (PROG(_,decleration_seq,command_seq)) =
     
     evalCommandSeq(command_seq,getDecList(decleration_seq))
 
 and getDecList [] = []
-    |getDecList ((Dec(strlist,dtype)):: listLeft) = 
+    |getDecList ((DEC(strlist,dtype)):: listLeft) = 
         varlistmaker(strlist,dtype) @ getDecList(listLeft)
         
 and varlistmaker([],dtype) = []
@@ -57,12 +57,12 @@ and updateVlist(id,value_upd,vlist) =
 
 and evalCommand (com,vlist) =
     case com of 
-    (Set(id,exp)) => updateVlist(id,evalexp(exp,vlist),vlist)
-    |(Read(variable)) => (print("Enter integer :");updateVlist(variable,getInt (chomp1 (getText (TextIO.stdIn))),vlist)) 
-    |(Write(exp)) => (print(Int.toString(evalexp(exp,vlist))^"\n");vlist)
-    |ite(exp,command_seq1,command_seq2)=>
+    (SET(id,exp)) => updateVlist(id,evalexp(exp,vlist),vlist)
+    |(READ(variable)) => (print("Enter integer :");updateVlist(variable,getInt (chomp1 (getText (TextIO.stdIn))),vlist)) 
+    |(WRITE(exp)) => (print(Int.toString(evalexp(exp,vlist))^"\n");vlist)
+    |ITE(exp,command_seq1,command_seq2)=>
         if evalexp(exp,vlist) = 1 then evalCommandSeq(command_seq1,vlist) else evalCommandSeq(command_seq2,vlist)
-    |while_exp(exp,command_seq)=> evalLoop (exp,command_seq,vlist)
+    |WH(exp,command_seq)=> evalLoop (exp,command_seq,vlist)
 
 
 and evalLoop (exp,command_seq,variableList) = 

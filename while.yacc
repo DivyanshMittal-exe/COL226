@@ -9,7 +9,7 @@ open AST
 %term
   NUMBER of int|IDENTIFIER of string
   |BTRUE|BFALSE
-  |INTEGER|BOOL
+  |INT|BOOL
   |PROGRAM| VAR
   |READ | WRITE
   |IF|THEN|ELSE|ENDIF|WHILE|DO|ENDWH
@@ -23,11 +23,11 @@ open AST
   |EOF
 
 %nonterm
-    srt of Prog
-  | decleration_seq of Dec list
-  | decleration of Dec 
-  | command_seq of Command list
-  | command of Command
+    srt of PROG
+  | decleration_seq of DEC list
+  | decleration of DEC 
+  | command_seq of CMD list
+  | command of CMD
   | varlist of string list
   | var of string
   | expression of Exp
@@ -53,15 +53,15 @@ open AST
 %%
 
 
-srt: PROGRAM IDENTIFIER SCOPE decleration_seq command_seq ((Prog(IDENTIFIER,decleration_seq,command_seq)))
+srt: PROGRAM IDENTIFIER SCOPE decleration_seq command_seq ((PROG(IDENTIFIER,decleration_seq,command_seq)))
 
 decleration_seq: decleration decleration_seq ((decleration::decleration_seq))
       |                      ([])
 
-decleration: VAR varlist COLON Type DELIM ((Dec(varlist,Type)))
+decleration: VAR varlist COLON Type DELIM ((DEC(varlist,Type)))
 
 Type: BOOL ((BOOL))
-      |INTEGER ((INTEGER))
+      |INT ((INT))
 
 varlist : IDENTIFIER ([IDENTIFIER])
         | IDENTIFIER COMMA varlist ((IDENTIFIER::varlist))
@@ -72,12 +72,11 @@ command_seq: LCURL command_seq RCURL ((command_seq))
 command_seq: command DELIM command_seq ((command::command_seq))
             |                           ([])
     
-command: IDENTIFIER ASSN expression ((Set(IDENTIFIER,expression)))
-        | READ IDENTIFIER ((Read(IDENTIFIER)))
-        | WRITE expression ((Write(expression)))
-        |IF expression THEN command_seq ELSE command_seq ENDIF ((ite(expression,command_seq1,command_seq2)))
-        |WHILE expression DO command_seq ENDWH ((while_exp
-        (expression,command_seq)))
+command: IDENTIFIER ASSN expression ((SET(IDENTIFIER,expression)))
+        | READ IDENTIFIER ((READ(IDENTIFIER)))
+        | WRITE expression ((WRITE(expression)))
+        |IF expression THEN command_seq ELSE command_seq ENDIF ((ITE(expression,command_seq1,command_seq2)))
+        |WHILE expression DO command_seq ENDWH ((WH(expression,command_seq)))
 
 
 expression:

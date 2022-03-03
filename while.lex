@@ -7,7 +7,7 @@ structure Tokens= Tokens
     val pos = ref 0
     val eof = fn () => Tokens.EOF(!pos, !linec)
 
-    fun throw (text,pos,linec) = print(String.concat[ "Error on line", (Int.toString linec),"at position",(Int.toString pos),": ", text, "\n" ])
+    fun throw (text,pos,linec) = print(String.concat[ "Error on line ", (Int.toString linec)," at global position ",(Int.toString pos)," : ", text, "\n" ])
 
     fun getInt i = 
       case Int.fromString(i) of 
@@ -50,7 +50,7 @@ structure Tokens= Tokens
 "}"      => (pos := !pos + size yytext;  Tokens.RCURL(!pos, !linec));
 "program"=> (pos := !pos + size yytext;  Tokens.PROGRAM(!pos, !linec));
 "var"    => (pos := !pos + size yytext;  Tokens.VAR(!pos, !linec));
-"int"    => (pos := !pos + size yytext;  Tokens.INTEGER(!pos, !linec));
+"int"    => (pos := !pos + size yytext;  Tokens.INT(!pos, !linec));
 "bool"   => (pos := !pos + size yytext;  Tokens.BOOL(!pos, !linec));
 "read"   => (pos := !pos + size yytext;  Tokens.READ(!pos, !linec));
 "write"  => (pos := !pos + size yytext;  Tokens.WRITE(!pos, !linec));

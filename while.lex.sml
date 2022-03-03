@@ -11,7 +11,7 @@ structure Tokens= Tokens
     val pos = ref 0
     val eof = fn () => Tokens.EOF(!pos, !linec)
 
-    fun throw (text,pos,linec) = print(String.concat[ "Error on line", (Int.toString linec),"at position",(Int.toString pos),": ", text, "\n" ])
+    fun throw (text,pos,linec) = print(String.concat[ "Error on line ", (Int.toString linec)," at global position ",(Int.toString pos)," : ", text, "\n" ])
 
     fun getInt i = 
       case Int.fromString(i) of 
@@ -701,7 +701,7 @@ let fun continue() = lex() in
 | 7 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.NUMBER((getInt yytext), !pos, !linec) end
 | 70 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.PROGRAM(!pos, !linec) end
 | 74 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.VAR(!pos, !linec) end
-| 78 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.INTEGER(!pos, !linec) end
+| 78 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.INT(!pos, !linec) end
 | 83 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.BOOL(!pos, !linec) end
 | 88 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.READ(!pos, !linec) end
 | 9 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.PLUS(!pos, !linec) end

@@ -1,7 +1,7 @@
 all:
 	ml-lex while.lex
 	ml-yacc while.yacc
-	sml load-while.sml
+	sml whileast.sml
 
 clean:
 	rm -rf while.yacc.sml

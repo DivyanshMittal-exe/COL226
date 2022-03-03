@@ -1,13 +1,13 @@
 structure AST =
 struct
-datatype Prog = Prog of string*(Dec list)*(Command list)
-and      Dec = Dec of (string list)*dtypes
-and      dtypes = INTEGER|BOOL
-and      Command = Set of string*Exp
-                  |Read of string
-                  |Write of Exp
-                  |ite of Exp*(Command list)*(Command list)
-                  |while_exp of Exp*(Command list)
+datatype PROG = PROG of string*(DEC list)*(CMD list)
+and      DEC = DEC of (string list)*dtypes
+and      dtypes = INT|BOOL
+and      CMD = SET of string*Exp
+                  |READ of string
+                  |WRITE of Exp
+                  |ITE of Exp*(CMD list)*(CMD list)
+                  |WH of Exp*(CMD list)
 and      Exp =  LT of Exp*Exp|
                 LEQ of Exp*Exp|
                 EQ of Exp*Exp|

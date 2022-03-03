@@ -8,18 +8,16 @@ To make sure precedence is followed, that the grammar given specifies, we use th
 ## Running the code
 
 To parse and create an AST file run 
-    ```
-        make
-
-        parseFile "filename";
-    ```
+    
+    make
+    parseFile "filename";
+    
 
 To parse and create an AST file without type checking run 
-    ```
-        make
 
-        parseFileNTC "filename";
-    ```
+    make
+    parseFileNTC "filename";
+    
 
 
 ## Context Free Grammar
@@ -33,9 +31,9 @@ DeclarationSeq={Declaration};
 Declaration="var", VariableList, ":",Type,";";
 Type = "int"|"bool";
 VariableList = Variable, {",", Variable};
-CommandSeq="{",{Command,";"},"}" ;
+CommandSeq="{",{CMD,";"},"}" ;
 
-Command=
+CMD=
     Variable,":=",Expression|
     "read", Variable|
     "write", Expression|
@@ -92,14 +90,14 @@ Digit="0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9";
 ## AST datatype definition
  
 ```
-datatype Prog = Prog of string*(Dec list)*(Command list)
-and      Dec = Dec of (string list)*dtypes
-and      dtypes = INTEGER|BOOL
-and      Command = Set of string*Exp
-                  |Read of string
-                  |Write of Exp
-                  |ite of Exp*(Command list)*(Command list)
-                  |while_exp of Exp*(Command list)
+datatype PROG = PROG of string*(DEC list)*(CMD list)
+and      DEC = DEC of (string list)*dtypes
+and      dtypes = INT|BOOL
+and      CMD = SET of string*Exp
+                  |READ of string
+                  |WRITE of Exp
+                  |ITE of Exp*(CMD list)*(CMD list)
+                  |C of Exp*(CMD list)
 and      Exp =  LT of Exp*Exp|
                 LEQ of Exp*Exp|
                 EQ of Exp*Exp|
@@ -120,58 +118,40 @@ and      Exp =  LT of Exp*Exp|
                 VAR of string
 ```
 ## Semantic directed translations
-```
-srt: PROGRAM IDENTIFIER SCOPE decleration_seq command_seq ((Prog(IDENTIFIER,decleration_seq,command_seq)))
 
-decleration_seq: decleration decleration_seq ((decleration::decleration_seq))
-      |                      ([])
+| Production  |    Semantic rule |
+|  :----:     |    :----:   |
+| Program -> "program" identifier "::" [list of declatrations] [list of commands] | (list of commands).variables := (list of declatrations).variables <br> variables.type = (list of (list of variables).type) <br> variables.value = (list of commands).execution |
+| decleration -> VAR [list of variables] COLON Type DELIM | (list of variables).type := Type.type |
+| Type -> int  | Type.type := int.int |
+| Type -> bool |  Type.type := bool.bool |
+|(list of commands)<sub>0</sub> -> LCURL (list of commands)<sub>1</sub> RCURL | (list of commands)<sub>0</sub>.attr := (list of commands)<sub>1</sub>.attr |
+| command -> IDENTIFIER ASSN expression | IDENTIFIER.val := expression.val |
+| command -> READ IDENTIFIER | IDENTIFIER.val := input.val |
+| command -> WRITE expression | output := expression.val |
+| command ->IF expression THEN command_seq ELSE command_seq ENDIF | variables.value := command_seq1.execute if expression.val = true else command_seq2.execute |
+| command ->WHILE expression DO command_seq ENDWH | while expression.val = true, variables.value := command.execute |
+| expression<sub>0</sub> -> expression<sub>1</sub> LT expression<sub>2</sub>  | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val < expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> LEQ expression<sub>2</sub>  | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val <= expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> EQ expression<sub>2</sub>  | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val = expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> GT expression<sub>2</sub>  | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val > expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> GEQ expression<sub>2</sub>  | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val >= expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> NEQ expression<sub>2</sub>  | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val <> expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> AND expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val &&expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> OR expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val ||expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> PLUS expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val + expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> MINUS expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val - expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> TIMES expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val * expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> DIV expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val / expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> MOD expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val % expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> LPAREN expression<sub>1</sub> RPAREN  | expression<sub>0</sub>.val := expression<sub>1</sub>.val |
+| expression<sub>0</sub> -> NOT expression<sub>1</sub>  | expression<sub>0</sub>.val := ! expression<sub>1</sub>.val |
+| expression<sub>0</sub> -> NEG expression<sub>1</sub>  | expression<sub>0</sub>.val := -1* expression<sub>1</sub>.val |
+| expression -> BTRUE  | expression.val := true |
+| expression -> BFALSE  | expression.val := false |
+| expression -> NUMBER  | expression.val := NUMBER.val |
+| expression -> IDENTIFIER  | expression.val := IDENTIFIER.val |
 
-decleration: VAR varlist COLON Type DELIM ((Dec(varlist,Type)))
-
-Type: BOOL ((BOOL))
-      |INTEGER ((INTEGER))
-
-varlist : IDENTIFIER ([IDENTIFIER])
-        | IDENTIFIER COMMA varlist ((IDENTIFIER::varlist))
-
-command_seq: LCURL command_seq RCURL ((command_seq))
-
-
-command_seq: command DELIM command_seq ((command::command_seq))
-            |                           ([])
-    
-command: IDENTIFIER ASSN expression ((Set(IDENTIFIER,expression)))
-        | READ IDENTIFIER ((Read(IDENTIFIER)))
-        | WRITE expression ((Write(expression)))
-        |IF expression THEN command_seq ELSE command_seq ENDIF ((ite(expression,command_seq1,command_seq2)))
-        |WHILE expression DO command_seq ENDWH ((while_exp
-        (expression,command_seq)))
-
-
-expression:
-        expression LT expression ((LT(expression1,expression2)))
-      | expression LEQ expression ((LEQ(expression1,expression2)))
-      | expression EQ expression ((EQ(expression1,expression2)))
-      | expression GT expression ((GT(expression1,expression2)))
-      | expression GEQ expression ((GEQ(expression1,expression2)))
-      | expression NEQ expression ((NEQ(expression1,expression2)))
-      | expression AND expression ((AND(expression1,expression2)))
-      | expression OR expression ((OR(expression1,expression2)))
-      | expression PLUS expression ((PLUS(expression1,expression2)))
-      | expression MINUS expression ((MINUS(expression1,expression2)))
-      | expression TIMES expression ((TIMES(expression1,expression2)))
-      | expression DIV expression ((DIV(expression1,expression2)))
-      | expression MOD expression ((MOD(expression1,expression2)))
-
-      | LPAREN expression RPAREN ((expression))
-
-      | NEG expression ((NEG(expression)))
-      | NOT expression ((NOT(expression)))
-      | BTRUE ((BOOLEAN(true)))
-      | BFALSE ((BOOLEAN(false)))
-      | NUMBER ((NUM(NUMBER)))
-      | IDENTIFIER ((VAR(IDENTIFIER)))
-```
 
 ## Test Code
 ### While code
@@ -187,11 +167,11 @@ expression:
 ### AST OutpuT
 ```
 val it =
-  Prog
-    ("chad",[Dec (["a","b","c"],INTEGER),Dec (["d","e","f"],BOOL)],
-     [Set ("b",NUM 0),
-      while_exp
-        (NEQ (VAR "b",NUM 5),[Write (VAR "b"),Set ("b",PLUS (VAR "b",NUM 1))])])
+  PROG
+    ("chad",[DEC (["a","b","c"],INT),DEC (["d","e","f"],BOOL)],
+     [SET ("b",NUM 0),
+      WH
+        (NEQ (VAR "b",NUM 5),[WRITE (VAR "b"),SET ("b",PLUS (VAR "b",NUM 1))])])
   : WhileParser.result
 ```
 

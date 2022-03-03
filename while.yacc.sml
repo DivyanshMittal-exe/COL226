@@ -359,13 +359,12 @@ datatype svalue = VOID | ntVOID of unit ->  unit
  | IDENTIFIER of unit ->  (string) | NUMBER of unit ->  (int)
  | Type of unit ->  (dtypes) | expression of unit ->  (Exp)
  | var of unit ->  (string) | varlist of unit ->  (string list)
- | command of unit ->  (Command)
- | command_seq of unit ->  (Command list)
- | decleration of unit ->  (Dec)
- | decleration_seq of unit ->  (Dec list) | srt of unit ->  (Prog)
+ | command of unit ->  (CMD) | command_seq of unit ->  (CMD list)
+ | decleration of unit ->  (DEC)
+ | decleration_seq of unit ->  (DEC list) | srt of unit ->  (PROG)
 end
 type svalue = MlyValue.svalue
-type result = Prog
+type result = PROG
 end
 structure EC=
 struct
@@ -383,7 +382,7 @@ fn (T 0) => "NUMBER"
   | (T 1) => "IDENTIFIER"
   | (T 2) => "BTRUE"
   | (T 3) => "BFALSE"
-  | (T 4) => "INTEGER"
+  | (T 4) => "INT"
   | (T 5) => "BOOL"
   | (T 6) => "PROGRAM"
   | (T 7) => "VAR"
@@ -449,7 +448,7 @@ IDENTIFIER1, _, _)) :: ( _, ( _, PROGRAM1left, _)) :: rest671)) => let
 IDENTIFIER1) = IDENTIFIER1 ()
  val  (decleration_seq as decleration_seq1) = decleration_seq1 ()
  val  (command_seq as command_seq1) = command_seq1 ()
- in ((Prog(IDENTIFIER,decleration_seq,command_seq)))
+ in ((PROG(IDENTIFIER,decleration_seq,command_seq)))
 end)
  in ( LrTable.NT 0, ( result, PROGRAM1left, command_seq1right), 
 rest671)
@@ -474,7 +473,7 @@ end
 VAR1left, _)) :: rest671)) => let val  result = MlyValue.decleration
  (fn _ => let val  (varlist as varlist1) = varlist1 ()
  val  (Type as Type1) = Type1 ()
- in ((Dec(varlist,Type)))
+ in ((DEC(varlist,Type)))
 end)
  in ( LrTable.NT 2, ( result, VAR1left, DELIM1right), rest671)
 end
@@ -482,10 +481,9 @@ end
 result = MlyValue.Type (fn _ => ((BOOL)))
  in ( LrTable.NT 8, ( result, BOOL1left, BOOL1right), rest671)
 end
-|  ( 5, ( ( _, ( _, INTEGER1left, INTEGER1right)) :: rest671)) => let
- val  result = MlyValue.Type (fn _ => ((INTEGER)))
- in ( LrTable.NT 8, ( result, INTEGER1left, INTEGER1right), rest671)
-
+|  ( 5, ( ( _, ( _, INT1left, INT1right)) :: rest671)) => let val  
+result = MlyValue.Type (fn _ => ((INT)))
+ in ( LrTable.NT 8, ( result, INT1left, INT1right), rest671)
 end
 |  ( 6, ( ( _, ( MlyValue.IDENTIFIER IDENTIFIER1, IDENTIFIER1left, 
 IDENTIFIER1right)) :: rest671)) => let val  result = MlyValue.varlist
@@ -533,7 +531,7 @@ end
 ) :: rest671)) => let val  result = MlyValue.command (fn _ => let val 
  (IDENTIFIER as IDENTIFIER1) = IDENTIFIER1 ()
  val  (expression as expression1) = expression1 ()
- in ((Set(IDENTIFIER,expression)))
+ in ((SET(IDENTIFIER,expression)))
 end)
  in ( LrTable.NT 4, ( result, IDENTIFIER1left, expression1right), 
 rest671)
@@ -542,7 +540,7 @@ end
 )) :: ( _, ( _, READ1left, _)) :: rest671)) => let val  result = 
 MlyValue.command (fn _ => let val  (IDENTIFIER as IDENTIFIER1) = 
 IDENTIFIER1 ()
- in ((Read(IDENTIFIER)))
+ in ((READ(IDENTIFIER)))
 end)
  in ( LrTable.NT 4, ( result, READ1left, IDENTIFIER1right), rest671)
 
@@ -551,7 +549,7 @@ end
 )) :: ( _, ( _, WRITE1left, _)) :: rest671)) => let val  result = 
 MlyValue.command (fn _ => let val  (expression as expression1) = 
 expression1 ()
- in ((Write(expression)))
+ in ((WRITE(expression)))
 end)
  in ( LrTable.NT 4, ( result, WRITE1left, expression1right), rest671)
 
@@ -563,7 +561,7 @@ command_seq2, _, _)) :: _ :: ( _, ( MlyValue.command_seq command_seq1,
  (fn _ => let val  (expression as expression1) = expression1 ()
  val  command_seq1 = command_seq1 ()
  val  command_seq2 = command_seq2 ()
- in ((ite(expression,command_seq1,command_seq2)))
+ in ((ITE(expression,command_seq1,command_seq2)))
 end)
  in ( LrTable.NT 4, ( result, IF1left, ENDIF1right), rest671)
 end
@@ -573,8 +571,7 @@ command_seq1, _, _)) :: _ :: ( _, ( MlyValue.expression expression1, _
 MlyValue.command (fn _ => let val  (expression as expression1) = 
 expression1 ()
  val  (command_seq as command_seq1) = command_seq1 ()
- in ((while_exp
-        (expression,command_seq)))
+ in ((WH(expression,command_seq)))
 end)
  in ( LrTable.NT 4, ( result, WHILE1left, ENDWH1right), rest671)
 end
@@ -778,7 +775,7 @@ fun BTRUE (p1,p2) = Token.TOKEN (ParserData.LrTable.T 2,(
 ParserData.MlyValue.VOID,p1,p2))
 fun BFALSE (p1,p2) = Token.TOKEN (ParserData.LrTable.T 3,(
 ParserData.MlyValue.VOID,p1,p2))
-fun INTEGER (p1,p2) = Token.TOKEN (ParserData.LrTable.T 4,(
+fun INT (p1,p2) = Token.TOKEN (ParserData.LrTable.T 4,(
 ParserData.MlyValue.VOID,p1,p2))
 fun BOOL (p1,p2) = Token.TOKEN (ParserData.LrTable.T 5,(
 ParserData.MlyValue.VOID,p1,p2))

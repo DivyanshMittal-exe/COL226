@@ -39,7 +39,7 @@ val READ:  'a * 'a -> (svalue,'a) token
 val VAR:  'a * 'a -> (svalue,'a) token
 val PROGRAM:  'a * 'a -> (svalue,'a) token
 val BOOL:  'a * 'a -> (svalue,'a) token
-val INTEGER:  'a * 'a -> (svalue,'a) token
+val INT:  'a * 'a -> (svalue,'a) token
 val BFALSE:  'a * 'a -> (svalue,'a) token
 val BTRUE:  'a * 'a -> (svalue,'a) token
 val IDENTIFIER: (string) *  'a * 'a -> (svalue,'a) token

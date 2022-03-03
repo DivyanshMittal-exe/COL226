@@ -8,11 +8,11 @@ exception notypematch
 fun typecheck prog = 
     progcheck prog
 
-and progcheck (Prog(_,decleration_seq,command_seq)) =
+and progcheck (PROG(_,decleration_seq,command_seq)) =
     checkCommandSeq(command_seq,getDecList(decleration_seq))
 
 and getDecList [] = []
-    |getDecList ((Dec(strlist,dtype)):: listLeft) = 
+    |getDecList ((DEC(strlist,dtype)):: listLeft) = 
         varlistmaker(strlist,dtype) @ getDecList(listLeft)
         
 and varlistmaker([],dtype) = []
@@ -38,23 +38,23 @@ and getvarType (id,vlist) =
 
 and checkCommand (com,vlist) =
     case com of 
-        (Set(id,exp)) =>
+        (SET(id,exp)) =>
             if getvarType(id,vlist) = getexptype(exp,vlist) then
                 true 
             else 
                 false
-    |(Read(_)) => true
-    |(Write(exp)) => 
-        if getexptype(exp,vlist) = INTEGER then 
+    |(READ(_)) => true
+    |(WRITE(exp)) => 
+        if getexptype(exp,vlist) = INT then 
             true
         else 
             false
-    |ite(exp,command_seq1,command_seq2)=>
+    |ITE(exp,command_seq1,command_seq2)=>
         if getexptype(exp,vlist) = BOOL andalso checkCommandSeq(command_seq1,vlist) = true andalso checkCommandSeq(command_seq2,vlist) = true then
             true 
         else 
             false
-    |while_exp(exp,command_seq)=>
+    |WH(exp,command_seq)=>
         if getexptype(exp,vlist) = BOOL andalso checkCommandSeq(command_seq,vlist) = true then 
             true 
         else 
@@ -105,33 +105,33 @@ and checkCommand (com,vlist) =
         else
             raise type_incorrect
     | (PLUS(exp1,exp2)) => 
-        if getexptype(exp1,vlist) = INTEGER andalso getexptype(exp2,vlist) = INTEGER then 
-            INTEGER
+        if getexptype(exp1,vlist) = INT andalso getexptype(exp2,vlist) = INT then 
+            INT
         else
             raise type_incorrect
     | (MINUS(exp1,exp2)) =>  
-        if getexptype(exp1,vlist) = INTEGER andalso getexptype(exp2,vlist) = INTEGER then 
-            INTEGER
+        if getexptype(exp1,vlist) = INT andalso getexptype(exp2,vlist) = INT then 
+            INT
         else
             raise type_incorrect
     | (TIMES(exp1,exp2)) =>  
-        if getexptype(exp1,vlist) = INTEGER andalso getexptype(exp2,vlist) = INTEGER then 
-            INTEGER
+        if getexptype(exp1,vlist) = INT andalso getexptype(exp2,vlist) = INT then 
+            INT
         else
             raise type_incorrect
     | (DIV(exp1,exp2)) => 
-        if getexptype(exp1,vlist) = INTEGER andalso getexptype(exp2,vlist) = INTEGER then 
-            INTEGER
+        if getexptype(exp1,vlist) = INT andalso getexptype(exp2,vlist) = INT then 
+            INT
         else
             raise type_incorrect
     | (MOD(exp1,exp2)) =>  
-        if getexptype(exp1,vlist) = INTEGER andalso getexptype(exp2,vlist) = INTEGER then 
-            INTEGER
+        if getexptype(exp1,vlist) = INT andalso getexptype(exp2,vlist) = INT then 
+            INT
         else
             raise type_incorrect
     | (NEG(exp)) => 
-        if getexptype(exp,vlist) = INTEGER then 
-            INTEGER
+        if getexptype(exp,vlist) = INT then 
+            INT
         else
             raise type_incorrect
     | NOT(exp) =>         
@@ -140,5 +140,5 @@ and checkCommand (com,vlist) =
         else
             raise type_incorrect
     | BOOLEAN(_) => BOOL
-    | NUM(_) => INTEGER
+    | NUM(_) => INT
     | VAR(id) => getvarType(id,vlist) 
