@@ -1,3 +1,6 @@
+(* All original code by Divyansh Mittal, 2020CS10342 *)
+
+
 structure While = struct
 structure WhileLrVals = WhileLrValsFun(structure Token = LrParser.Token)
 structure WhileLex = WhileLexFun(structure Tokens = WhileLrVals.Tokens);

@@ -1,3 +1,5 @@
+(* All original code by Divyansh Mittal, 2020CS10342 *)
+
 structure AST =
 struct
 datatype PROG = PROG of string*(DEC list)*(CMD list)

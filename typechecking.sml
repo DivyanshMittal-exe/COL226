@@ -1,14 +1,13 @@
+(* All original code by Divyansh Mittal, 2020CS10342 *)
+
 open AST
 
-exception Invalid_var
-exception type_mismatch
-exception type_incorrect
-exception notypematch
+exception undeclared_variable;
+exception type_mismatch;
+exception type_incorrect;
+exception notypematch;
 
-fun typecheck prog = 
-    progcheck prog
-
-and progcheck (PROG(_,decleration_seq,command_seq)) =
+fun typecheck (PROG(_,decleration_seq,command_seq)) =
     checkCommandSeq(command_seq,getDecList(decleration_seq))
 
 and getDecList [] = []
@@ -21,49 +20,36 @@ and varlistmaker([],dtype) = []
 
 and checkCommandSeq([],vlist) = true
     |checkCommandSeq(command::commandSeqLeft,vlist) = 
-        let
-          val com_res = checkCommand(command,vlist)
-          val com_left_res = checkCommandSeq(commandSeqLeft,vlist) 
-        in
-          if com_res = true andalso com_left_res = true then
-                true
-         else
-            false   
-        end
+        case (checkCommand(command,vlist),checkCommandSeq(commandSeqLeft,vlist)) of 
+            (true,true) => true
+            | _ => false
 
 and getvarType (id,vlist) = 
     case List.find(fn (str, _) => str = id) vlist of
-    SOME (_,dtype) => dtype
-    | NONE => raise Invalid_var
+        SOME (_,dtype) => dtype
+        | NONE => raise undeclared_variable
 
 and checkCommand (com,vlist) =
     case com of 
-        (SET(id,exp)) =>
-            if getvarType(id,vlist) = getexptype(exp,vlist) then
-                true 
-            else 
-                false
+    (SET(id,exp)) =>(getvarType(id,vlist) = getexptype(exp,vlist))
     |(READ(_)) => true
     |(WRITE(exp)) => 
-        if getexptype(exp,vlist) = INT then 
-            true
-        else 
-            false
+        (case getexptype(exp,vlist) of
+            INT => true
+            | _ => false)
     |ITE(exp,command_seq1,command_seq2)=>
-        if getexptype(exp,vlist) = BOOL andalso checkCommandSeq(command_seq1,vlist) = true andalso checkCommandSeq(command_seq2,vlist) = true then
-            true 
-        else 
-            false
+        (case (getexptype(exp,vlist),checkCommandSeq(command_seq1,vlist),checkCommandSeq(command_seq2,vlist)) of
+            (BOOL,true,true) => true
+            | _ => false)
     |WH(exp,command_seq)=>
-        if getexptype(exp,vlist) = BOOL andalso checkCommandSeq(command_seq,vlist) = true then 
-            true 
-        else 
-            false
+        (case (getexptype(exp,vlist),checkCommandSeq(command_seq,vlist)) of
+                (BOOL,true) => true
+                | _ => false)
 
 
  and getexptype (expression,vlist) = 
     case expression of
-    LT(exp1,exp2) =>
+        LT(exp1,exp2)  =>
         if getexptype(exp1,vlist) = getexptype(exp2,vlist) then 
             BOOL
         else
@@ -142,3 +128,6 @@ and checkCommand (com,vlist) =
     | BOOLEAN(_) => BOOL
     | NUM(_) => INT
     | VAR(id) => getvarType(id,vlist) 
+
+    handle type_mismatch => (print("There is a type mismatch \n");BOOL)
+        |  type_incorrect =>( print("Operation and type do not match \n");BOOL)

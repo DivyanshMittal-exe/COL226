@@ -1,3 +1,5 @@
+(* All original code by Divyansh Mittal, 2020CS10342 *)
+
 structure Tokens= Tokens
     type pos = int
     type svalue = Tokens.svalue

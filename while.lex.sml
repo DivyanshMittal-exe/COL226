@@ -2,6 +2,8 @@ functor WhileLexFun(structure Tokens : While_TOKENS)=
    struct
     structure UserDeclarations =
       struct
+(* All original code by Divyansh Mittal, 2020CS10342 *)
+
 structure Tokens= Tokens
     type pos = int
     type svalue = Tokens.svalue
