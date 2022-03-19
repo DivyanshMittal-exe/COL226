@@ -1,14 +1,12 @@
 program chad :: 
-
-var a,b,c : int ;var d,e,f : bool;
+var a,b,c ,ifx: int ;var d,e,f : bool;
 {   
     read a;
     read b;
-    read d;
-    write 5+5;
+    read z;
+    write +5*+5;
     write c;
-    c := b*(a/b) + a%b;
-    b := + 1;
+    d := a < +1;
     while  b <> 5 do { write b; b := b + 1;} endwh;
     if b = 5 then {d := tt;} else {d := ff;write 1;} endif;
 }

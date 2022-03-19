@@ -14,7 +14,7 @@ exception typeMismatchError
 val invoke = fn lexstream => 
     let val print_error = fn (text,pos,linec) => print(String.concat[ "Error on line ", (Int.toString linec)," at global position ",(Int.toString pos)," : ", text, "\n" ])
     in 
-        WhileParser.parse(0,lexstream,print_error,())
+        WhileParser.parse(15,lexstream,print_error,())
     end
 
 fun newLexer fcn = 

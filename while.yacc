@@ -41,7 +41,7 @@ open AST
 %left TIMES DIV MOD
 %right NEG NOT
 %left LPAREN RPAREN
-
+ 
 %start srt
 
 %eop EOF
@@ -78,9 +78,7 @@ command: IDENTIFIER ASSN expression ((SET(IDENTIFIER,expression)))
         | WRITE expression ((WRITE(expression)))
         | IF expression THEN command_seq ELSE command_seq ENDIF ((ITE(expression,command_seq1,command_seq2)))
         | WHILE expression DO command_seq ENDWH ((WH(expression,command_seq)))
-        
-        | IDENTIFIER ASSN PLUS expression ((SET(IDENTIFIER,expression)))
-        | WRITE PLUS expression ((WRITE(expression)))
+
 
 
 expression:
@@ -105,19 +103,6 @@ expression:
       | BTRUE ((BOOLEAN(true)))
       | BFALSE ((BOOLEAN(false)))
       | NUMBER ((NUM(NUMBER)))
+      | PLUS NUMBER ((NUM(NUMBER)))
       | IDENTIFIER ((VAR(IDENTIFIER)))
-
-      | expression LT PLUS expression ((LT(expression1,expression2)))
-      | expression LEQ PLUS expression ((LEQ(expression1,expression2)))
-      | expression EQ PLUS expression ((EQ(expression1,expression2)))
-      | expression GT PLUS expression ((GT(expression1,expression2)))
-      | expression GEQ PLUS expression ((GEQ(expression1,expression2)))
-      | expression NEQ PLUS expression ((NEQ(expression1,expression2)))
-      | expression PLUS PLUS expression ((PLUS(expression1,expression2)))
-      | expression MINUS PLUS expression ((MINUS(expression1,expression2)))
-      | expression TIMES PLUS expression ((TIMES(expression1,expression2)))
-      | expression DIV PLUS expression ((DIV(expression1,expression2)))
-      | expression MOD PLUS expression ((MOD(expression1,expression2)))
-      | LPAREN PLUS expression RPAREN ((expression))
-      | NEG PLUS expression ((NEG(expression)))
 

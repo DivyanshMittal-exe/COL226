@@ -5,8 +5,7 @@ Since the given EBNF has reduce reduce conflicts, for a) bool exp and int exp , 
 
 For the negation problem, an expn like ~5 could have been read as negation of expression, or as an expression, as a numral can be made to negation 5. For this conflict I have chenged the rule from 
     Numeral=[ + | ~ ]Digit,{Digit} to Numeral=Digit,{Digit}
-The rule negation of expression takes care of this problem and for expressions like +5, we need to add a few extra rules like 
-    exp -> exp PLUS PLUS exp
+The rule negation of expression takes care of this problem and for expressions like +5, we add a rule exp -> PLUS NUMBER
 as something like 5 + +5 is a valid operation
 
 To make sure precedence is followed, that the grammar given specifies, we use the Yacc's feature of specifying precedence. 
@@ -62,6 +61,7 @@ Expression=
     Variable|
     Comparison|
     Numeral|
+    + Numeral|
     "tt"|
     "ff"|
     
@@ -145,30 +145,31 @@ and      Exp =  LT of Exp*Exp|
 | Type -> int  | Type.type := int.int |
 | Type -> bool |  Type.type := bool.bool |
 |(list of commands)<sub>0</sub> -> LCURL (list of commands)<sub>1</sub> RCURL | (list of commands)<sub>0</sub>.attr := (list of commands)<sub>1</sub>.attr |
-| command -> IDENTIFIER ASSN expression <br>| IDENTIFIER.val := expression.val |
+| command -> IDENTIFIER ASSN expression| IDENTIFIER.val := expression.val |
 | command -> READ IDENTIFIER | IDENTIFIER.val := input.val |
-| command -> WRITE expression <br>| output := expression.val |
+| command -> WRITE expression | output := expression.val |
 | command ->IF expression THEN command_seq ELSE command_seq ENDIF | variables.value := command_seq1.execute if expression.val = true else command_seq2.execute |
 | command ->WHILE expression DO command_seq ENDWH | while expression.val = true, variables.value := command.execute |
-| expression<sub>0</sub> -> expression<sub>1</sub> LT expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> LT PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val < expression<sub>2</sub>.val else false  |
-| expression<sub>0</sub> -> expression<sub>1</sub> LEQ expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> LEQ PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val <= expression<sub>2</sub>.val else false  |
-| expression<sub>0</sub> -> expression<sub>1</sub> EQ expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> EQ PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val = expression<sub>2</sub>.val else false  |
-| expression<sub>0</sub> -> expression<sub>1</sub> GT expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> GT PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val > expression<sub>2</sub>.val else false  |
-| expression<sub>0</sub> -> expression<sub>1</sub> GEQ expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> GEQ PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val >= expression<sub>2</sub>.val else false  |
-| expression<sub>0</sub> -> expression<sub>1</sub> NEQ expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> NEQ PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val <> expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> LT expression<sub>2</sub> | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val < expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> LEQ expression<sub>2</sub> | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val <= expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> EQ expression<sub>2</sub> | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val = expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> GT expression<sub>2</sub>  | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val > expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> GEQ expression<sub>2</sub>  | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val >= expression<sub>2</sub>.val else false  |
+| expression<sub>0</sub> -> expression<sub>1</sub> NEQ expression<sub>2</sub> | expression<sub>0</sub>.val := tt if expression<sub>1</sub>.val <> expression<sub>2</sub>.val else false  |
 | expression<sub>0</sub> -> expression<sub>1</sub> AND expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val &&expression<sub>2</sub>.val |
 | expression<sub>0</sub> -> expression<sub>1</sub> OR expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val ||expression<sub>2</sub>.val |
-| expression<sub>0</sub> -> expression<sub>1</sub> PLUS expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> PLUS PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := expression<sub>1</sub>.val + expression<sub>2</sub>.val |
-| expression<sub>0</sub> -> expression<sub>1</sub> MINUS expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> MINUS PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := expression<sub>1</sub>.val - expression<sub>2</sub>.val |
-| expression<sub>0</sub> -> expression<sub>1</sub> TIMES expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> TIMES PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := expression<sub>1</sub>.val * expression<sub>2</sub>.val |
-| expression<sub>0</sub> -> expression<sub>1</sub> DIV expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> DIV PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := expression<sub>1</sub>.val / expression<sub>2</sub>.val |
-| expression<sub>0</sub> -> expression<sub>1</sub> MOD expression<sub>2</sub>  <br> expression<sub>0</sub> -> expression<sub>1</sub> MOD PLUS expression<sub>2</sub>| expression<sub>0</sub>.val := expression<sub>1</sub>.val % expression<sub>2</sub>.val |
-| expression<sub>0</sub> -> LPAREN expression<sub>1</sub> RPAREN <br> expression<sub>0</sub> -> LPAREN PLUS expression<sub>1</sub> RPAREN | expression<sub>0</sub>.val := expression<sub>1</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> PLUS expression<sub>2</sub> | expression<sub>0</sub>.val := expression<sub>1</sub>.val + expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> MINUS expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val - expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> TIMES expression<sub>2</sub> | expression<sub>0</sub>.val := expression<sub>1</sub>.val * expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> DIV expression<sub>2</sub>  | expression<sub>0</sub>.val := expression<sub>1</sub>.val / expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> expression<sub>1</sub> MOD expression<sub>2</sub>  >| expression<sub>0</sub>.val := expression<sub>1</sub>.val % expression<sub>2</sub>.val |
+| expression<sub>0</sub> -> LPAREN expression<sub>1</sub> RPAREN  | expression<sub>0</sub>.val := expression<sub>1</sub>.val |
 | expression<sub>0</sub> -> NOT expression<sub>1</sub>  | expression<sub>0</sub>.val := ! expression<sub>1</sub>.val |
-| expression<sub>0</sub> -> NEG expression<sub>1</sub>  <br> expression<sub>0</sub> -> NEG PLUS expression<sub>1</sub> | expression<sub>0</sub>.val := -1* expression<sub>1</sub>.val |
+| expression<sub>0</sub> -> NEG expression<sub>1</sub>| expression<sub>0</sub>.val := -1* expression<sub>1</sub>.val |
 | expression -> BTRUE  | expression.val := true |
 | expression -> BFALSE  | expression.val := false |
 | expression -> NUMBER  | expression.val := NUMBER.val |
+| expression -> PLUS NUMBER  | expression.val := NUMBER.val |
 | expression -> IDENTIFIER  | expression.val := IDENTIFIER.val |
 
 
