@@ -73,7 +73,8 @@ struct
     fun all (function : 'a -> bool) : 'a Stack -> bool = List.all function
     fun list2stack (listinp : 'a list) : 'a Stack = listinp
     fun stack2list (stckinp : 'a Stack) : 'a list  = stckinp
-    fun toString (function : 'a -> string) :'a Stack -> string = let
+    fun toString (function : 'a -> string) :'a Stack -> string = 
+    let
       fun f [] = "\n"
         | f(hd::tl) = (function hd ) ^" "^ (f tl)
     in f end
