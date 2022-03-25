@@ -1,0 +1,9 @@
+program ap :: 
+var a,d,n,s : int;
+{   
+    read a;
+    read d;
+    read n;
+    s := (n/2)*(2*a+(n-1)*d);
+    write s;
+}

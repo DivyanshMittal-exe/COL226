@@ -11,8 +11,8 @@ use "whileinterface.sml";
 use "FunStack.sml";
 use "vmc.sml";
 
-Control.Print.printLength := 100; 
-Control.Print.printDepth := 100; 
-Control.Print.stringDepth := 100;
+Control.Print.printLength := 1000; 
+Control.Print.printDepth := 1000; 
+Control.Print.stringDepth := 1000;
 open While;
 open Vmc;
