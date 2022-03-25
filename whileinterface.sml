@@ -44,8 +44,7 @@ fun lexerToParser (lexer) =
 
 fun parseFileNTC filename = lexerToParser (fileToLexer (filename))
 
-
-fun evaluateFile  filename = 
+(* fun evaluateFile  filename = 
     let
       val ast_made = lexerToParser (fileToLexer (filename))
     in
@@ -54,6 +53,7 @@ fun evaluateFile  filename =
       else 
         raise typeMismatchError
     end
+    handle typeMismatchError => (print("Type mismatch\n");[("",0,BOOL)]) *)
 
 fun parseFile filename = 
     let

@@ -1,10 +1,9 @@
-program chad :: 
 
-var a,b,c : int ;var d,e,f : bool;
-{   
-    a := 1;
-    b := 2;
-    c := 4;
-    d := tt;
-    write b;
-}
+    program chad :: 
+
+    var a,b,c : int ;var d,e,f : bool;
+    {   
+        read a;
+        b := 0;
+        while  b <> 5 do { write b; b := b + 1;} endwh;
+    }

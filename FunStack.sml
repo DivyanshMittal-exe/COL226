@@ -1,6 +1,6 @@
 signature STACK =
 sig
-    type 'a Stack
+    type 'a Stack = 'a list
     exception EmptyStack
     exception Error of string
     val create: unit -> 'a Stack
@@ -53,19 +53,13 @@ struct
         (case stck of 
             [] => NONE
             |(element::stckLeft) => SOME (element,stckLeft))
-    
     fun nth (stck: 'a Stack, n: int) : 'a = List.nth (stck, n)
-
     fun drop (stck: 'a Stack, n: int) : 'a Stack = List.drop (stck,n)
-
     fun depth (stck: 'a Stack) : int = length stck
-
     fun app (function :'a -> unit):'a Stack -> unit = List.app function
-
     fun map (function :'a -> 'b): 'a Stack -> 'b Stack = List.map function
     fun mapPartial (function :'a -> 'b option): 'a Stack -> 'b Stack = List.mapPartial function
-    fun find  (function : 'a -> bool) : 'a Stack -> 'a option =
-        List.find function 
+    fun find  (function : 'a -> bool) : 'a Stack -> 'a option = List.find function 
     fun filter (function : 'a -> bool) : 'a Stack -> 'a Stack = List.filter function
     fun foldr  (function : 'a * 'b -> 'b) : 'b -> 'a Stack -> 'b = foldr function
     fun foldl  (function : 'a * 'b -> 'b) : 'b -> 'a Stack -> 'b = foldl function 

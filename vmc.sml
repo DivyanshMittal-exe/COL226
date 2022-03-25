@@ -2,10 +2,9 @@ open AST
 open FunStack
 
 exception Invalid_var
+exception notNumber
 
-val maxMemSize = 1024
-val m =  Array.array(maxMemSize,0)
-(* val mem = Array.array(maxMemSize,0) *)
+(* val maxMemSize = 1024 *)
 
 datatype command = value of int
                 | pointer of int*dtypes
@@ -14,30 +13,26 @@ datatype command = value of int
                 | ITE 
                 | WH
                 | READ | WRITE 
-                | SKIP
-                | cmdexp of command list
+                | cmdexp of command Stack
 
 signature VMC =
 sig
     type V
     type M
     type C
-    type SymbolTable
     exception Error of string
-    val makeSymbolTable: DEC list ->  (string*dtypes*int) list
-    val ASTtoPostfix: PROG ->  command list
-    val rules:int list * int array * command list -> int list * int array * command list
-    val evaluate: PROG  -> int list * int array * command list
-    (* val toString :  V*M*C-> string
-    val postfix : (PROG) -> command list *)
+    val postfix: CMD list ->  C
+    val rules:  V*M*C -> V*M*C
+    val evaluate: PROG  -> unit
+    val toString :  V*M*C -> string
 end
 
 structure Vmc :> VMC =
 struct
-    type V = int Stack
+    type V = command Stack
     type M = int Array.array
     type C = command Stack
-    type SymbolTable = (string*dtypes*int) list
+    (* type hTable = (string, (dtypes * int)) HashTable.hash_table *)
     exception Error of string
 
       (* to remove newline character on reading. Taken from profs website, which he has allowed to use*)
@@ -58,17 +53,9 @@ struct
       fun getText dat = 
           case TextIO.inputLine dat of 
             SOME l => l
-          | NONE   => "" 
+          | NONE   =>"" 
 
-      fun lookUp (symbolTable, locate: string) = 
-        case List.find (fn (x,_,_) => x = locate ) symbolTable of
-           SOME (_,_,i) => i  
-         | NONE         => raise Invalid_var
 
-      fun lookUpType (symbolTable, locate: string) = 
-        case List.find (fn (x,_,_) => x = locate ) symbolTable of
-           SOME (_,d,_) => d 
-         | NONE         => raise Invalid_var
 
       fun getinputval(text, dtype) = 
           case dtype of
@@ -81,91 +68,108 @@ struct
            | INT => getInt(text)              
 
 
-      fun makeSymbolTable(declarations: DEC list) : (string*dtypes*int) list = List.mapi (fn (i,(x,y)) => (x,y,i)) (List.concatMap (fn DEC(strlist,dtype) => (List.map (fn x => (x,dtype)) strlist)) declarations)
+      fun ASTtoPostfix(PROG(_,decleration_seq,command_seq)) : C = (makeSymbolTable(decleration_seq);postfix(command_seq)) 
 
-      fun ASTtoPostfix(PROG(_,decleration_seq,command_seq)) = CMDtoPostfix(command_seq,makeSymbolTable(decleration_seq))
-
-      and CMDtoPostfix ([],symbolTable) = []
-          | CMDtoPostfix (command:: command_seq,symbolTable) = 
+      and postfix ([]) : C = []
+          | postfix (command:: command_seq) : C  = 
               case command of
-                (AST.SET(id,expn))                       => [pointer(lookUp(symbolTable,id),lookUpType(symbolTable,id))] @ EXPtoPostfix(expn,symbolTable) @ [SET] @  CMDtoPostfix(command_seq,symbolTable)
-                |(AST.READ(id))                         => [pointer(lookUp(symbolTable,id),lookUpType(symbolTable,id))] @ [READ] @ CMDtoPostfix(command_seq,symbolTable)
-                |(AST.WRITE(expn))                       => EXPtoPostfix(expn,symbolTable) @ [WRITE] @ CMDtoPostfix(command_seq,symbolTable)
-                |AST.ITE(expn,command_seq1,command_seq2) => EXPtoPostfix(expn,symbolTable) @ [cmdexp(CMDtoPostfix(command_seq1,symbolTable))] @ [cmdexp(CMDtoPostfix(command_seq2,symbolTable))] @ [ITE] @ CMDtoPostfix(command_seq,symbolTable)
-                |AST.WH(expn,command_seq1)                => [cmdexp(EXPtoPostfix(expn,symbolTable))] @ [cmdexp(CMDtoPostfix(command_seq1,symbolTable))] @ [WH] @ CMDtoPostfix(command_seq,symbolTable)
+                (AST.SET(id,expn))                          => [value(lookUp(id))] @ EXPtoPostfix(expn) @ [SET] @  postfix(command_seq)
+                |(AST.READ(id))                             => [pointer(lookUp(id),lookUpType(id))] @ [READ] @ postfix(command_seq)
+                |(AST.WRITE(expn))                          => EXPtoPostfix(expn) @ [WRITE] @ postfix(command_seq)
+                |AST.ITE(expn,command_seq1,command_seq2)    => EXPtoPostfix(expn) @ [cmdexp(postfix(command_seq1))] @ [cmdexp(postfix(command_seq2))] @ [ITE] @ postfix(command_seq)
+                |AST.WH(expn,command_seq1)                  => [cmdexp(EXPtoPostfix(expn))] @ [cmdexp(postfix(command_seq1))] @ [WH] @ postfix(command_seq)
 
 
-      and EXPtoPostfix(expression : Exp ,symbolTable) = 
+      and EXPtoPostfix(expression : Exp ): C  = 
           case expression of
-                AST.LT(expn1,expn2)       => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [LT]
-              | (AST.LEQ(expn1,expn2))    => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [LEQ]
-              | (AST.EQ(expn1,expn2))     => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [EQ]
-              | (AST.GT(expn1,expn2))     => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [GT]
-              | (AST.GEQ(expn1,expn2))    => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [GEQ]
-              | (AST.NEQ(expn1,expn2))    => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [NEQ]
-              | (AST.AND(expn1,expn2))    => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [AND]
-              | (AST.OR(expn1,expn2))     => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [OR]
-              | (AST.PLUS(expn1,expn2))   => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [PLUS]
-              | (AST.MINUS(expn1,expn2))  => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [MINUS]
-              | (AST.TIMES(expn1,expn2))  => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [TIMES] 
-              | (AST.DIV(expn1,expn2))    => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [DIV]
-              | (AST.MOD(expn1,expn2))    => EXPtoPostfix(expn1,symbolTable) @ EXPtoPostfix(expn2,symbolTable) @ [MOD]
-              | (AST.NEG(expn))           => EXPtoPostfix(expn,symbolTable)  @ [NEG]
-              | (AST.NOT(expn))           => EXPtoPostfix(expn,symbolTable)  @ [NOT]  
-              | BOOLEAN(bool_val)     => if bool_val = true then [value(1)] else [value(0) ]
-              | NUM(num_val)          => [value(num_val)]
-              | VAR(id)               => [pointer(lookUp(symbolTable,id),lookUpType(symbolTable,id)) ] 
+                AST.LT(expn1,expn2)       => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [LT]
+              | (AST.LEQ(expn1,expn2))    => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [LEQ]
+              | (AST.EQ(expn1,expn2))     => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [EQ]
+              | (AST.GT(expn1,expn2))     => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [GT]
+              | (AST.GEQ(expn1,expn2))    => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [GEQ]
+              | (AST.NEQ(expn1,expn2))    => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [NEQ]
+              | (AST.AND(expn1,expn2))    => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [AND]
+              | (AST.OR(expn1,expn2))     => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [OR]
+              | (AST.PLUS(expn1,expn2))   => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [PLUS]
+              | (AST.MINUS(expn1,expn2))  => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [MINUS]
+              | (AST.TIMES(expn1,expn2))  => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [TIMES] 
+              | (AST.DIV(expn1,expn2))    => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [DIV]
+              | (AST.MOD(expn1,expn2))    => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [MOD]
+              | (AST.NEG(expn))           => EXPtoPostfix(expn)  @ [NEG]
+              | (AST.NOT(expn))           => EXPtoPostfix(expn)  @ [NOT]  
+              | BOOLEAN(bool_val)         => if bool_val = true then [value(1)] else [value(0) ]
+              | NUM(num_val)              => [value(num_val)]
+              | VAR(id)                   => [pointer(lookUp(id),lookUpType(id)) ] 
 
 
     fun  rules (Vs,Ms,[]) = (Vs,Ms,[])
-        |  rules (x::y::Vs,Ms,PLUS::Cs) = rules((x+y)::Vs,Ms,Cs)
-        |  rules (x::y::Vs,Ms,MINUS::Cs) = rules((x-y)::Vs,Ms,Cs)
-        |  rules (x::y::Vs,Ms,TIMES::Cs) = rules((x*y)::Vs,Ms,Cs)
-        |  rules (x::y::Vs,Ms,DIV::Cs) = rules((x div y)::Vs,Ms,Cs)
-        |  rules (x::y::Vs,Ms,MOD::Cs) = rules((x mod y)::Vs,Ms,Cs)
-        |  rules (x::y::Vs,Ms,EQ::Cs) = if x = y then rules(1::Vs,Ms,Cs) else rules(0::Vs,Ms,Cs) 
-        |  rules (x::y::Vs,Ms,NEQ::Cs) = if x <> y then rules(1::Vs,Ms,Cs) else rules(0::Vs,Ms,Cs) 
-        |  rules (x::y::Vs,Ms,LT::Cs) = if x < y then rules(1::Vs,Ms,Cs) else rules(0::Vs,Ms,Cs) 
-        |  rules (x::y::Vs,Ms,GT::Cs) = if x > y then rules(1::Vs,Ms,Cs) else rules(0::Vs,Ms,Cs) 
-        |  rules (x::y::Vs,Ms,LEQ::Cs) = if x <= y then rules(1::Vs,Ms,Cs) else rules(0::Vs,Ms,Cs) 
-        |  rules (x::y::Vs,Ms,GEQ::Cs) = if x >= y then rules(1::Vs,Ms,Cs) else rules(0::Vs,Ms,Cs) 
-        |  rules (x::y::Vs,Ms,AND::Cs) = if x <> 0 andalso y <> 0 then rules(1::Vs,Ms,Cs) else rules(0::Vs,Ms,Cs) 
-        |  rules (x::y::Vs,Ms,OR::Cs) = if  x <> 0 orelse y <> 0 then rules(1::Vs,Ms,Cs) else rules(0::Vs,Ms,Cs) 
-        |  rules (x::Vs ,Ms,NEG::Cs) = rules(~1*x::Vs,Ms,Cs)
-        |  rules (x::Vs ,Ms,NOT::Cs) = if  x = 0 then rules(1::Vs,Ms,Cs) else rules(0::Vs,Ms,Cs) 
-        |  rules (m::x::Vs ,Ms,SET::Cs) = (Array.update(Ms,x,m);rules(Vs,Ms,Cs))
-        |  rules (x::Vs ,Ms,cmdexp(c)::cmdexp(d)::ITE::Cs) = if x = 1 then rules(Vs,Ms, (c @ Cs)) else rules(Vs,Ms, (d @ Cs))
-        |  rules (x::Vs ,Ms,cmdexp(c)::SKIP::ITE::Cs) = if x = 1 then rules(Vs,Ms, (c @ Cs)) else rules(Vs,Ms, Cs)
-
-        |  rules (Vs ,Ms,cmdexp(c)::cmdexp(d)::WH::Cs) = (Vs ,Ms,c @ [cmdexp(d),SKIP,ITE,cmdexp(c),cmdexp(d),WH] @ Cs)
-
-        |  rules (x::Vs ,Ms,cmdexp(d)::WH::Cs) = if x = 1 then rules(Vs,Ms, (d @ Cs)) else rules(Vs,Ms,Cs)
-        |  rules (m::Vs ,Ms,WRITE::Cs) = (print(Int.toString(m)^"\n"); rules(Vs,Ms,Cs) )
+        |  rules (value(x)::value(y)::Vs,Ms,PLUS::Cs)             = rules(value(x+y)::Vs,Ms,Cs)
+        |  rules (value(x)::value(y)::Vs,Ms,MINUS::Cs)            = rules(value(x-y)::Vs,Ms,Cs)
+        |  rules (value(x)::value(y)::Vs,Ms,TIMES::Cs)            = rules(value(x*y)::Vs,Ms,Cs)
+        |  rules (value(x)::value(y)::Vs,Ms,DIV::Cs)              = rules(value(x div y)::Vs,Ms,Cs)
+        |  rules (value(x)::value(y)::Vs,Ms,MOD::Cs)              = rules(value(x mod y)::Vs,Ms,Cs)
+        |  rules (value(x)::value(y)::Vs,Ms,EQ::Cs)               = if x = y then rules(value(1)::Vs,Ms,Cs) else rules(value(0)::Vs,Ms,Cs) 
+        |  rules (value(x)::value(y)::Vs,Ms,NEQ::Cs)              = if x <> y then rules(value(1)::Vs,Ms,Cs) else rules(value(0)::Vs,Ms,Cs) 
+        |  rules (value(x)::value(y)::Vs,Ms,LT::Cs)               = if x < y then rules(value(1)::Vs,Ms,Cs) else rules(value(0)::Vs,Ms,Cs) 
+        |  rules (value(x)::value(y)::Vs,Ms,GT::Cs)               = if x > y then rules(value(1)::Vs,Ms,Cs) else rules(value(0)::Vs,Ms,Cs) 
+        |  rules (value(x)::value(y)::Vs,Ms,LEQ::Cs)              = if x <= y then rules(value(1)::Vs,Ms,Cs) else rules(value(0)::Vs,Ms,Cs) 
+        |  rules (value(x)::value(y)::Vs,Ms,GEQ::Cs)              = if x >= y then rules(value(1)::Vs,Ms,Cs) else rules(value(0)::Vs,Ms,Cs) 
+        |  rules (value(x)::value(y)::Vs,Ms,AND::Cs)              = if x <> 0 andalso y <> 0 then rules(value(1)::Vs,Ms,Cs) else rules(value(0)::Vs,Ms,Cs) 
+        |  rules (value(x)::value(y)::Vs,Ms,OR::Cs)               = if  x <> 0 orelse y <> 0 then rules(value(1)::Vs,Ms,Cs) else rules(value(0)::Vs,Ms,Cs) 
+        |  rules (value(x)::Vs ,Ms,NEG::Cs)                       = rules(value(~1*x)::Vs,Ms,Cs)
+        |  rules (value(x)::Vs ,Ms,NOT::Cs)                       = if  x = 0 then rules(value(1)::Vs,Ms,Cs) else rules(value(0)::Vs,Ms,Cs) 
+        |  rules (value(m)::value(x)::Vs ,Ms,SET::Cs)             = (Array.update(Ms,x,m);rules(Vs,Ms,Cs))
+        |  rules (value(x)::Vs ,Ms,cmdexp(c)::cmdexp(d)::ITE::Cs) = if x = 1 then rules(Vs,Ms, (c @ Cs)) else rules(Vs,Ms, (d @ Cs))
+        |  rules (Vs ,Ms,cmdexp(b)::cmdexp(c)::WH::Cs)            = rules(cmdexp(c)::cmdexp(b)::Vs ,Ms, b @ WH::Cs)
+        |  rules (value(x)::cmdexp(c)::cmdexp(b)::Vs ,Ms,WH::Cs)  = if x = 0 then rules(Vs,Ms, Cs) else rules(Vs,Ms,c @ cmdexp(b)::cmdexp(c)::WH::Cs)
+        |  rules (value(m)::Vs ,Ms,WRITE::Cs)                     = (print(Int.toString(m)^"\n"); rules(Vs,Ms,Cs) )
         |  rules (Vs ,Ms,pointer(x,t)::READ::Cs) = 
             let
               val p = print("Input: \n")
               val inp  = getinputval( (chomp1 (getText (TextIO.stdIn))) , t)
               val upd = Array.update(Ms,x,inp)
             in
-                (Vs,Ms,Cs)
+                rules(Vs,Ms,Cs)
             end
-        | rules (Vs,Ms,value(x)::Cs) = rules(x::Vs,Ms,Cs)
-        | rules (Vs,Ms,pointer(x,_)::Cs) = rules(Array.sub(Ms,x)::Vs,Ms,Cs)
+        | rules (Vs,Ms,value(x)::Cs)                              = rules(value(x)::Vs,Ms,Cs)
+        | rules (Vs,Ms,pointer(x,_)::Cs)                          = rules(value(Array.sub(Ms,x))::Vs,Ms,Cs)
 
+        fun COMtoString com = 
+          case com of
+              value (x) => Int.toString x
+              | pointer(x,_) =>"#"^(Int.toString x)
+              | PLUS  => "PLUS" 
+              | MINUS => "MINUS"    
+              | TIMES => "TIMES"
+              | DIV   => "DIV" 
+              | MOD   => "MOD" 
+              | EQ    => "EQ"
+              | NEQ   => "NEQ" 
+              | LT    => "LT"   
+              | GT    => "GT"   
+              | LEQ   => "LEQ"    
+              | GEQ   => "GEQ"    
+              | AND   => "AND"    
+              | OR    => "OR"         
+              | NOT   => "NOT"    
+              | NEG   => "NEG"   
+              | SET   => "SET"    
+              | ITE   => "ITE"    
+              | WH    => "WH"  
+              | READ  => "READ"     
+              | WRITE => "WRITE"      
+              | cmdexp(c) => (FunStack.toString COMtoString c)^"SEQ"
+        fun ComStackString(stck: command Stack):string = FunStack.toString COMtoString stck
+        fun MemToString(mem: M):string = (String.concat (List.map (fn (s,(d,i)) =>"#"^Int.toString(i)^" :"^s^" => "^Int.toString(Array.sub(mem,i))^"; ") (HashTable.listItemsi SymbolTable)))^"\n"
+        fun toString(v:V,m:M,c:C) : string = ComStackString(v) ^ MemToString(m) ^ ComStackString(c)
 
         fun evaluate(AST) = 
           let
-            val v: int list = []
-            val m = Array.array(maxMemSize,0)
-            val c: command list  = ASTtoPostfix(AST)
+            val v: V = []
+            val m: M = Array.array(maxMemSize,0)
+            val c: C = ASTtoPostfix(AST)
           in
-            rules (v , m ,c)
+            print(toString (rules (v , m ,c)))
           end
-            (* val v: int Stack = FunStack.create()
-            val m: int Array= Array.array(512,0)
-            val c: command Stack  = FunStack.list2stack (ASTtoPostfix(AST)) *)
 
 end (*Struct end *)
-
-
-(*makeSymbolTable([DEC (["a","b","c","ifx"],INT),DEC (["d","e","f"],BOOL)]) *)
