@@ -1,0 +1,11 @@
+program emp :: 
+var a,c : int;
+{   
+    read a;
+    c:=2;
+    if a > 0 then {
+       c:= 1;
+    } else {
+    } endif;
+    write c;
+}

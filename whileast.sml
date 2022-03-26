@@ -16,3 +16,5 @@ Control.Print.printDepth := 1000;
 Control.Print.stringDepth := 1000;
 open While;
 open Vmc;
+
+evaluate(parseFile "fact")
