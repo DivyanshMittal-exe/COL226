@@ -1,7 +1,8 @@
 program fact :: 
-var a,c : int;
+var a,c : int; var b: bool;
 {   
     read a;
+    read b;
     c:=1;
     if a > 0 then {
         while a <> 0 do{ c:=c*a;a:=a-1; }endwh;

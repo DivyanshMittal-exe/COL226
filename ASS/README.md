@@ -5,15 +5,7 @@ The VMC machine is basically 2 command stack and one memory array. The lookup ta
 - For the read command, you will be prompted by the text `Input :`. If the read is for a bool variable, enter tt or ff. For an int, enter an int.
 - Redefination of variables is allowed. If a variable of the same type is declared multiple times, the evaluator will only keep one instance of it. If it is declared as multiple types multiple times, only the last declrn will be considered.
 - type 'a Stack = 'a list but no high order function of list was used to directly implement the stack functions 
-- For while and ite **NO** compount datatype is used, as using that defeats the purpose of a stack 
 
-
-## How does the code work
-
-Basically before we start evaluating or executing, we need to be sure if we have to do them or not. Eg a case like b.c.WH, here b is a bool exp, so has a lots of terms and we need to lookahead and find if its a normal bool exp or not. As if this b evaluates to 1, we need to make c.b.c.WH and thus need this b. So essentially how we go about finding what a command is, we need to count the commands that come and number of operations they want. The function `getCommand` does this. Eg (b).(c).(d).ITE , we will keep the operator and operand track for (b),(c),(d). Say they are l,m,n. So we get l+m+n - 3 + 1 as count of the expn. As ITE brings together 3 operations and makes them to 1. Something like "value(1) value(2) PLUS" becomes +1 +1 (+2-1) as value(x) adds 1 operation, and PLUS brings together two and makes it to one. We keep doing this till we reduce to 1 and the last token is a command type (ie SET,SEQ,READ,WRITE,ITE,WH). 
-
-Once we have this command, and its type, dealing with cases like READ,WRITE,SET. For ITE,WH,SEQ, we need to do the above process again with some changes(liek applcn in reverse). This is easy as while travesral we will be popping from command stack and use the calue stack to flip it. While travesrsing again, we can easily get the depth of the various sub commands. Eg b.c.d.ITE , we need to split between b,c and d. That is why we need a seq datatype. This code is `splitCommand`.
- 
 ## Running the code
 
 To parse and create an AST file run 
@@ -33,7 +25,7 @@ The funstack is implemented as a type list. Higer order functions of lists are *
 ```
 signature STACK =
 sig
-    type 'a Stack = 'a list
+    type 'a Stack
     exception EmptyStack
     exception InvalidAccess
     val create: unit -> 'a Stack
@@ -82,45 +74,42 @@ end
 
 ### While code
 ```
-program rev :: 
-var n,rem,rev : int;
-{   
-    read n;
-    rev := 0;
-    while n <> 0 do 
-    {
-        rem := n % 10;
-        rev := rev * 10 + rem;
-        n := n/10;
-    }
-    endwh;
-    write rev;
-}
+    program chad :: 
 
+    var a,b,c : int ;var d,e,f : bool;
+    {   
+        b := 0;
+        while  b <> 5 do { write b; b := b + 1;} endwh;
+    }
 ```
 ### AST OutpuT
 ```
 val it =
-  PROG
-    ("rev",[DEC (["n","rem","rev"],INT)],
-     [READ "n",SET ("rev",NUM 0),
+ PROG
+    ("chad",[DEC (["a","b","c"],INT),DEC (["d","e","f"],BOOL)],
+     [SET ("b",NUM 0),
       WH
-        (NEQ (VAR "n",NUM 0),
-         [SET ("rem",MOD (VAR "n",NUM 10)),
-          SET ("rev",PLUS (TIMES (VAR "rev",NUM 10),VAR "rem")),
-          SET ("n",DIV (VAR "n",NUM 10))]),WRITE (VAR "rev")]) :
-  WhileParser.result
+        (NEQ (VAR "b",NUM 5),[WRITE (VAR "b"),SET ("b",PLUS (VAR "b",NUM 1))])])
+  : WhileParser.result
 ```
 
 ### Evaluation output
 ```
 - evaluate (parseFile "test");
 Input: 
-1234
-4321
-val it = (-,-,-) : V * M * C
+10
+0
+1
+2
+3
+4
+
+#0 :a => 10; #1 :b => 5; #4 :e => 0; #5 :f => 0; #3 :d => 0; #2 :c => 0;
+
+val it = () : unit
 -
 ```
+Since in the end both value stack and command stack are empty, we get an empty line.
 
 
 

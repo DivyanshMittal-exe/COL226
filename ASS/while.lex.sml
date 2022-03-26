@@ -13,12 +13,13 @@ structure Tokens= Tokens
     val pos = ref 0
     val eof = fn () => Tokens.EOF(!pos, !linec)
 
-    fun throw (text,pos,linec) = print(String.concat[ "Error at global position ",(Int.toString pos)," : ", text, "\n" ])
+    fun throw (text,pos,linec) = print(String.concat[ "Error on line ", (Int.toString linec)," at global position ",(Int.toString pos)," : ", text, "\n" ])
 
     fun getInt i = 
       case Int.fromString(i) of 
           SOME i => i
           | NONE => 0
+
 
     fun init() = ()
 
@@ -539,10 +540,10 @@ in Vector.fromList(List.map g
 {fin = [], trans = 1},
 {fin = [], trans = 1},
 {fin = [(N 139)], trans = 0},
-{fin = [(N 37),(N 139)], trans = 0},
+{fin = [(N 34),(N 139)], trans = 0},
 {fin = [(N 62),(N 139)], trans = 0},
 {fin = [(N 1),(N 139)], trans = 6},
-{fin = [(N 10)], trans = 0},
+{fin = [(N 56)], trans = 0},
 {fin = [(N 60),(N 139)], trans = 0},
 {fin = [(N 137),(N 139)], trans = 9},
 {fin = [(N 137)], trans = 9},
@@ -596,28 +597,28 @@ in Vector.fromList(List.map g
 {fin = [(N 137)], trans = 58},
 {fin = [(N 137)], trans = 59},
 {fin = [(N 83),(N 137)], trans = 9},
-{fin = [(N 29),(N 139)], trans = 61},
-{fin = [(N 35)], trans = 0},
-{fin = [(N 22),(N 139)], trans = 0},
-{fin = [(N 27),(N 139)], trans = 64},
-{fin = [(N 25)], trans = 0},
+{fin = [(N 26),(N 139)], trans = 61},
 {fin = [(N 32)], trans = 0},
-{fin = [(N 53),(N 139)], trans = 0},
-{fin = [(N 46),(N 139)], trans = 68},
-{fin = [(N 44)], trans = 0},
-{fin = [(N 49)], trans = 0},
+{fin = [(N 19),(N 139)], trans = 0},
+{fin = [(N 24),(N 139)], trans = 64},
+{fin = [(N 22)], trans = 0},
+{fin = [(N 29)], trans = 0},
+{fin = [(N 50),(N 139)], trans = 0},
+{fin = [(N 43),(N 139)], trans = 68},
+{fin = [(N 41)], trans = 0},
+{fin = [(N 46)], trans = 0},
 {fin = [(N 7),(N 139)], trans = 71},
 {fin = [(N 7)], trans = 71},
-{fin = [(N 18),(N 139)], trans = 0},
-{fin = [(N 14),(N 139)], trans = 0},
-{fin = [(N 51),(N 139)], trans = 0},
-{fin = [(N 12),(N 139)], trans = 0},
-{fin = [(N 16),(N 139)], trans = 0},
-{fin = [(N 41),(N 139)], trans = 0},
-{fin = [(N 39),(N 139)], trans = 0},
+{fin = [(N 15),(N 139)], trans = 0},
+{fin = [(N 11),(N 139)], trans = 0},
+{fin = [(N 48),(N 139)], trans = 0},
+{fin = [(N 9),(N 139)], trans = 0},
+{fin = [(N 13),(N 139)], trans = 0},
+{fin = [(N 38),(N 139)], trans = 0},
+{fin = [(N 36),(N 139)], trans = 0},
 {fin = [(N 139)], trans = 80},
-{fin = [(N 56)], trans = 0},
-{fin = [(N 20),(N 139)], trans = 0},
+{fin = [(N 53)], trans = 0},
+{fin = [(N 17),(N 139)], trans = 0},
 {fin = [(N 58),(N 139)], trans = 0},
 {fin = [(N 4),(N 139)], trans = 84},
 {fin = [(N 4)], trans = 84},
@@ -665,38 +666,37 @@ let fun continue() = lex() in
 			(* Application actions *)
 
   1 => (linec := !linec + 1; lex())
-| 10 => let val yytext=yymktext() in pos := !pos + size yytext;   Tokens.OR(!pos, !linec) end
 | 102 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.THEN(!pos, !linec) end
 | 107 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.ELSE(!pos, !linec) end
+| 11 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.MINUS(!pos, !linec) end
 | 113 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.ENDIF(!pos, !linec) end
 | 119 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.WHILE(!pos, !linec) end
-| 12 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.PLUS(!pos, !linec) end
 | 122 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.DO(!pos, !linec) end
 | 128 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.ENDWH(!pos, !linec) end
+| 13 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.TIMES(!pos, !linec) end
 | 131 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.BTRUE(!pos, !linec) end
 | 134 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.BFALSE(!pos, !linec) end
 | 137 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.IDENTIFIER(yytext,!pos, !linec) end
 | 139 => let val yytext=yymktext() in throw(yytext, !pos, !linec); pos := !pos + size yytext;  lex() end
-| 14 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.MINUS(!pos, !linec) end
-| 16 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.TIMES(!pos, !linec) end
-| 18 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.DIV(!pos, !linec) end
-| 20 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.MOD(!pos, !linec) end
-| 22 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.EQ(!pos, !linec) end
-| 25 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.NEQ(!pos, !linec) end
-| 27 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.LT(!pos, !linec) end
-| 29 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.GT(!pos, !linec) end
-| 32 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.LEQ(!pos, !linec) end
-| 35 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.GEQ(!pos, !linec) end
-| 37 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.NEG(!pos, !linec) end
-| 39 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.LPAREN(!pos, !linec) end
+| 15 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.DIV(!pos, !linec) end
+| 17 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.MOD(!pos, !linec) end
+| 19 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.EQ(!pos, !linec) end
+| 22 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.NEQ(!pos, !linec) end
+| 24 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.LT(!pos, !linec) end
+| 26 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.GT(!pos, !linec) end
+| 29 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.LEQ(!pos, !linec) end
+| 32 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.GEQ(!pos, !linec) end
+| 34 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.NEG(!pos, !linec) end
+| 36 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.LPAREN(!pos, !linec) end
+| 38 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.RPAREN(!pos, !linec) end
 | 4 => let val yytext=yymktext() in pos := !pos + size yytext;  lex() end
-| 41 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.RPAREN(!pos, !linec) end
-| 44 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.ASSN(!pos, !linec) end
-| 46 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.COLON(!pos, !linec) end
-| 49 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.SCOPE(!pos, !linec) end
-| 51 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.COMMA(!pos, !linec) end
-| 53 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.DELIM(!pos, !linec) end
-| 56 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.AND(!pos, !linec) end
+| 41 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.ASSN(!pos, !linec) end
+| 43 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.COLON(!pos, !linec) end
+| 46 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.SCOPE(!pos, !linec) end
+| 48 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.COMMA(!pos, !linec) end
+| 50 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.DELIM(!pos, !linec) end
+| 53 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.AND(!pos, !linec) end
+| 56 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.OR(!pos, !linec) end
 | 58 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.NOT(!pos, !linec) end
 | 60 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.LCURL(!pos, !linec) end
 | 62 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.RCURL(!pos, !linec) end
@@ -706,6 +706,7 @@ let fun continue() = lex() in
 | 78 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.INT(!pos, !linec) end
 | 83 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.BOOL(!pos, !linec) end
 | 88 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.READ(!pos, !linec) end
+| 9 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.PLUS(!pos, !linec) end
 | 94 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.WRITE(!pos, !linec) end
 | 97 => let val yytext=yymktext() in pos := !pos + size yytext;  Tokens.IF(!pos, !linec) end
 | _ => raise Internal.LexerError

@@ -9,12 +9,13 @@ structure Tokens= Tokens
     val pos = ref 0
     val eof = fn () => Tokens.EOF(!pos, !linec)
 
-    fun throw (text,pos,linec) = print(String.concat[ "Error at global position ",(Int.toString pos)," : ", text, "\n" ])
+    fun throw (text,pos,linec) = print(String.concat[ "Error on line ", (Int.toString linec)," at global position ",(Int.toString pos)," : ", text, "\n" ])
 
     fun getInt i = 
       case Int.fromString(i) of 
           SOME i => i
           | NONE => 0
+
 
     fun init() = ()
 
@@ -24,8 +25,7 @@ structure Tokens= Tokens
 %%
 [\n|\r\n] => (linec := !linec + 1; lex());
 [\ \t]+    => (pos := !pos + size yytext;  lex());
-[0-9]+ =>   (pos := !pos + size yytext;  Tokens.NUMBER((getInt yytext), !pos, !linec));
-"||"     => (pos := !pos + size yytext;   Tokens.OR(!pos, !linec));
+[0-9]+ => (pos := !pos + size yytext;  Tokens.NUMBER((getInt yytext), !pos, !linec));
 "+"      => (pos := !pos + size yytext;  Tokens.PLUS(!pos, !linec));
 "-"      => (pos := !pos + size yytext;  Tokens.MINUS(!pos, !linec)); 
 "*"      => (pos := !pos + size yytext;  Tokens.TIMES(!pos, !linec));
@@ -46,6 +46,7 @@ structure Tokens= Tokens
 ","      => (pos := !pos + size yytext;  Tokens.COMMA(!pos, !linec));
 ";"      => (pos := !pos + size yytext;  Tokens.DELIM(!pos, !linec));
 "&&"     => (pos := !pos + size yytext;  Tokens.AND(!pos, !linec));
+"||"     => (pos := !pos + size yytext;  Tokens.OR(!pos, !linec));
 "!"      => (pos := !pos + size yytext;  Tokens.NOT(!pos, !linec));
 "{"      => (pos := !pos + size yytext;  Tokens.LCURL(!pos, !linec));
 "}"      => (pos := !pos + size yytext;  Tokens.RCURL(!pos, !linec));

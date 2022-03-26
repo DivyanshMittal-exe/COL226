@@ -21,7 +21,6 @@ fun lookUpType (locate: string) =
         | NONE         => raise undeclared_variable)
         handle undeclared_variable => (print("Variable not declared");BOOL)
 
-
 fun typecheck (PROG(_,decleration_seq,command_seq)) = (makeSymbolTable(decleration_seq);checkCommandSeq(command_seq))
 and checkCommandSeq(commandSequence: CMD list) = List.all checkCommand commandSequence
 and checkCommand (com) =

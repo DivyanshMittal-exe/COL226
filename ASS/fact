@@ -1,10 +1,10 @@
-program emp :: 
+program fact :: 
 var a,c : int;
 {   
     read a;
-    c:=2;
+    c:=1;
     if a > 0 then {
-       c:= 1;
+        while a <> 0 do{ c:=c*a;a:=a-1; }endwh;
     } else {
     } endif;
     write c;

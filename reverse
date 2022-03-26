@@ -1,4 +1,3 @@
-
 program ap :: 
 var n,rem,rev : int;
 {   
@@ -8,7 +7,7 @@ var n,rem,rev : int;
     {
         rem := n % 10;
         rev := rev * 10 + rem;
-        n := n/10;
+        n := n/0;
     }
     endwh;
     write rev;

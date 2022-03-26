@@ -1,8 +1,8 @@
 open AST
 open FunStack
-
 exception Invalid_var
 exception notNumber
+exception Unmatched
 
 (* val maxMemSize = 1024 *)
 
@@ -22,12 +22,10 @@ sig
     type M
     type C
     exception Error of string
-    val ASTtoPostfix: PROG -> C
     val postfix: CMD list ->  C
     val rules:  V*M*C -> V*M*C
-    val evaluate: PROG  -> unit
+    val evaluate: PROG  -> V*M*C
     val toString :  V*M*C -> string
-    val ComStackString: C -> string 
 end
 
 structure Vmc :> VMC = 
@@ -48,9 +46,10 @@ struct
 
       (* Returns int from string *)
       fun getInt i = 
-          case Int.fromString(i) of 
+        (case Int.fromString(i) of 
             SOME i => i
-          | NONE   => raise notNumber
+          | NONE   => raise notNumber)
+         handle notNumber =>(print("Entered value is not an integer"); 0)
 
       fun getText dat = 
           case TextIO.inputLine dat of 
@@ -58,37 +57,40 @@ struct
           | NONE   =>"" 
 
       fun getinputval(text, dtype) = 
-          case dtype of
+(          case dtype of
              BOOL => (
                case text of 
                   "tt" => 1
                   |"ff" => 0
                   | _ => raise type_mismatch
              )
-           | INT => getInt(text)              
+           | INT => getInt(text)      )      
+
+           handle type_mismatch =>(print("Entered value not bool"); 0)  
 
 
-      fun ASTtoPostfix(PROG(_,decleration_seq,command_seq)) : C = (makeSymbolTable(decleration_seq);postfix(command_seq)) 
+      (* Converts AST to postfix *)
+      fun ASTtoPostfix(PROG(_,decleration_seq,command_seq)) : command Stack = (makeSymbolTable(decleration_seq);postfix(command_seq)) 
 
-      and postfix ([]) : C = [EMPTYCOM]
-        | postfix ([command]) : C  = 
+      and postfix ([]) : command Stack = [EMPTYCOM]
+        | postfix ([command]) : command Stack  = 
             (case command of
                 (AST.SET(id,expn))                          => [value(lookUp(id))] @ EXPtoPostfix(expn) @ [SET]
                 |(AST.READ(id))                             => [pointer(lookUp(id),lookUpType(id))] @ [READ] 
                 |(AST.WRITE(expn))                          => EXPtoPostfix(expn) @ [WRITE] 
                 |AST.ITE(expn,command_seq1,command_seq2)    => EXPtoPostfix(expn) @ postfix(command_seq1) @ postfix(command_seq2) @ [ITE] 
-                |AST.WH(expn,command_seq1)                  => EXPtoPostfix(expn) @ postfix(command_seq1) @ [WH] )
+                |AST.WH(expn,command_seq1)                  => EXPtoPostfix(expn)@ postfix(command_seq1) @ [WH] )
           
-          | postfix (command :: command_seq) : C  = 
+          | postfix (command :: command_seq) : command Stack  = (
               case command of
                 (AST.SET(id,expn))                          => [value(lookUp(id))] @ EXPtoPostfix(expn) @ [SET] @  postfix(command_seq) @ [SEQ]
                 |(AST.READ(id))                             => [pointer(lookUp(id),lookUpType(id))] @ [READ] @ postfix(command_seq) @ [SEQ]
                 |(AST.WRITE(expn))                          => EXPtoPostfix(expn) @ [WRITE] @ postfix(command_seq) @ [SEQ]
                 |AST.ITE(expn,command_seq1,command_seq2)    => EXPtoPostfix(expn) @ postfix(command_seq1) @ postfix(command_seq2) @ [ITE]  @ postfix(command_seq) @ [SEQ]
-                |AST.WH(expn,command_seq1)                  => EXPtoPostfix(expn) @ postfix(command_seq1) @ [WH] @ postfix(command_seq) @ [SEQ]
+                |AST.WH(expn,command_seq1)                  =>  EXPtoPostfix(expn) @ postfix(command_seq1) @ [WH]@ postfix(command_seq) @ [SEQ])
 
  
-      and EXPtoPostfix(expression : Exp ): C  = 
+      and EXPtoPostfix(expression : Exp ): command Stack  = 
           case expression of
                 AST.LT(expn1,expn2)       => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [LT]
               | (AST.LEQ(expn1,expn2))    => EXPtoPostfix(expn1) @ EXPtoPostfix(expn2) @ [LEQ]
@@ -109,16 +111,27 @@ struct
               | NUM(num_val)              => [value(num_val)]
               | VAR(id)                   => [pointer(lookUp(id),lookUpType(id)) ] 
 
+    (* Top 2 values of Stack *)
+    fun get2val(Vs) = 
+(    let
+      val SOME (value(x),xs) = FunStack.poptop Vs
+      val SOME (value(y),ys) = FunStack.poptop xs
+    in
+        (x,y,ys)
+    end)
+
+    (* Concats List with Stack *)
+    fun concat (list,stck) = FunStack.list2stack(list@FunStack.stack2list(stck))
+
     fun getLast(com) = 
       let
-        val x = List.rev com
+        val x = List.rev (FunStack.stack2list com)
       in
-        hd x
+        FunStack.top x
       end
 
-    and remlast(com) = List.rev (tl (List.rev com))
-
-
+    and remlast(com) = List.rev (FunStack.pop (List.rev (FunStack.stack2list com)))
+    
     and 
        splitCommand([],count,left) = ([],left)
       |splitCommand(x::xs,count,left) =
@@ -129,9 +142,9 @@ struct
 
     and rules(Vs,Ms,[]) = (Vs,Ms,[])
       |rules(Vs,Ms,Cs) =
-        case getLast Cs of
+(        case getLast Cs of
            READ => let
-              val pointer(x,t) = hd Cs
+              val pointer(x,t) = FunStack.top Cs
               val p = print("Input: \n")
               val inp  = getinputval( (chomp1 (getText (TextIO.stdIn))) , t)
               val upd = Array.update(Ms,x,inp)
@@ -142,105 +155,82 @@ struct
          | WRITE => let
            val exp = (remlast(Cs))
            val (Vn,Mn,Cn) = ruleseval(Vs,Ms,exp)
-           (* val p = print(ComStackString(remlast(Cs))) *)
-           val value(ac) = hd Vn 
+           val value(ac) = FunStack.top Vn 
            val p = print(Int.toString(ac)^"\n")
          in
-            (tl Vn,Mn,Cn) 
+            (FunStack.pop Vn,Mn,Cn) 
          end
          | SET => let
-           val exp = tl(remlast(Cs))
-           val value(loc) = hd(Cs)
+           val exp = FunStack.pop(remlast(Cs))
+           val value(loc) = FunStack.top(Cs)
 
            val (v,m,c) = ruleseval (Vs,Ms,exp) 
-           val value(ac) = hd v 
+           val value(ac) = FunStack.top v 
            val up = Array.update(Ms,loc,ac)
-           (* val p = print(ComStackString(exp))
-           val p = print(ComStackString(v))
-           val p = print(ComStackString(c))
-           val p = print("ss") *)
-           (*val p = print(ComStackString(c))*)
          in
-           (tl v,m,c)
+           (FunStack.pop v,m,c)
          end 
          |ITE => let
            val (c1,c_process) = (splitCommand(List.rev( remlast(Cs)),0,[]))
            val (c2,expLeft) = (splitCommand(List.rev (c_process),0,[]))
            val (valst,mem,con) = ruleseval (Vs,Ms,expLeft)
-           val value(doweeval) = hd valst
+           val value(doweeval) = FunStack.top valst
 
           in
             if doweeval = 1 then 
-                (tl valst,mem, c2)
+                (FunStack.pop valst,mem, c2)
               else
-                (tl valst,mem, c1)
+                (FunStack.pop valst,mem, c1)
               
           end
           | WH => let
             val (c1,expLeft) = (splitCommand(List.rev (remlast(Cs)),0,[]))
-            (* val p = print("Am here\n")
-            val p = print(ComStackString(c1))
-            val p = print(ComStackString(expLeft)) *)
             val (valst,mem,con) = ruleseval (Vs,Ms,expLeft)
-            val value(doweeval) = hd valst
-            (* val p = print(Int.toString(doweeval)^"\n") *)
-
-
+            val value(doweeval) = FunStack.top valst
           in
             if doweeval = 1 then 
-                (tl valst,mem, c1 @ Cs)
+                (FunStack.pop valst,mem, c1 @ Cs)
               else
-                (tl valst,mem, [])
+                (FunStack.pop valst,mem, [])
           end
           |  EMPTYCOM => 
-             (Vs,Ms,tl Cs)
+             (Vs,Ms,FunStack.pop Cs)
+            | _ => raise Unmatched
+          
+            )
+          handle Bind => (print("Non binding error");([],Ms,[]))
+                |EmptyStack => (print("Stack is empty");([],Ms,[]))
+                |Unmatched => (print("Invalid command");([],Ms,[]))
 
-          (* | SEQ => executer(Vs,Ms,remlast(Cs))
-            let
-              val (c1,expLeft) = (splitCommand(List.rev (remlast(Cs)),0,[]))
-              val (valst,mem,con) = rules (Vs,Ms,c1)
-            in
-              (valst,mem,con@expLeft)
-            end *)
-          (* |x => (print(COMtoString(x));raise Error("s")) *)
-        
-         
 
-    and  ruleseval (Vs,Ms,[]) = (Vs,Ms,[])
-        |  ruleseval (value(x)::value(y)::Vs,Ms,PLUS::Cs)             = ruleseval(value(x+y)::Vs,Ms,Cs)
-        |  ruleseval (value(x)::value(y)::Vs,Ms,MINUS::Cs)            = ruleseval(value(y-x)::Vs,Ms,Cs) 
-        |  ruleseval (value(x)::value(y)::Vs,Ms,TIMES::Cs)            = ruleseval(value(x*y)::Vs,Ms,Cs)
-        |  ruleseval (value(x)::value(y)::Vs,Ms,DIV::Cs)              = ruleseval(value(y div x)::Vs,Ms,Cs)
-        |  ruleseval (value(x)::value(y)::Vs,Ms,MOD::Cs)              = ruleseval(value(y mod x)::Vs,Ms,Cs)
-        |  ruleseval (value(x)::value(y)::Vs,Ms,EQ::Cs)               = if y =  x then ruleseval(value(1)::Vs,Ms,Cs) else ruleseval(value(0)::Vs,Ms,Cs) 
-        |  ruleseval (value(x)::value(y)::Vs,Ms,NEQ::Cs)              = if y <> x then ruleseval(value(1)::Vs,Ms,Cs) else ruleseval(value(0)::Vs,Ms,Cs) 
-        |  ruleseval (value(x)::value(y)::Vs,Ms,LT::Cs)               = if y <  x then ruleseval(value(1)::Vs,Ms,Cs) else ruleseval(value(0)::Vs,Ms,Cs) 
-        |  ruleseval (value(x)::value(y)::Vs,Ms,GT::Cs)               = if y >  x then ruleseval(value(1)::Vs,Ms,Cs) else ruleseval(value(0)::Vs,Ms,Cs) 
-        |  ruleseval (value(x)::value(y)::Vs,Ms,LEQ::Cs)              = if y <= x then ruleseval(value(1)::Vs,Ms,Cs) else ruleseval(value(0)::Vs,Ms,Cs) 
-        |  ruleseval (value(x)::value(y)::Vs,Ms,GEQ::Cs)              = if y >= x then ruleseval(value(1)::Vs,Ms,Cs) else ruleseval(value(0)::Vs,Ms,Cs) 
-        |  ruleseval (value(x)::value(y)::Vs,Ms,AND::Cs)              = if x <> 0 andalso y <> 0 then ruleseval(value(1)::Vs,Ms,Cs) else ruleseval(value(0)::Vs,Ms,Cs) 
-        |  ruleseval (value(x)::value(y)::Vs,Ms,OR::Cs)               = if  x <> 0 orelse y <> 0 then ruleseval(value(1)::Vs,Ms,Cs) else ruleseval(value(0)::Vs,Ms,Cs) 
-        |  ruleseval (value(x)::Vs ,Ms,NEG::Cs)                       = ruleseval(value(~1*x)::Vs,Ms,Cs)
-        |  ruleseval (value(x)::Vs ,Ms,NOT::Cs)                       = if  x = 0 then ruleseval(value(1)::Vs,Ms,Cs) else ruleseval(value(0)::Vs,Ms,Cs) 
-        (* |  rules (value(m)::value(x)::Vs ,Ms,SET::Cs)             = (Array.update(Ms,x,m);rules(Vs,Ms,Cs))
-        |  rules (value(x)::Vs ,Ms,cmdexp(c)::cmdexp(d)::ITE::Cs) = if x = 0 then rules(Vs,Ms, (d @ Cs)) else rules(Vs,Ms, (c @ Cs))
-        |  rules (Vs ,Ms,cmdexp(b)::cmdexp(c)::WH::Cs)            = rules(cmdexp(c)::cmdexp(b)::Vs ,Ms, b @ WH::Cs)
-        |  rules (value(x)::cmdexp(c)::cmdexp(b)::Vs ,Ms,WH::Cs)  = if x = 0 then rules(Vs,Ms, Cs) else rules(Vs,Ms,c @ cmdexp(b)::cmdexp(c)::WH::Cs)
-        |  rules (value(m)::Vs ,Ms,WRITE::Cs)                     = (print(Int.toString(m)^"\n"); rules(Vs,Ms,Cs) )
-        |  rules (Vs ,Ms,pointer(x,t)::READ::Cs) = 
-            let
-              val p = print("Input: \n")
-              val inp  = getinputval( (chomp1 (getText (TextIO.stdIn))) , t)
-              val upd = Array.update(Ms,x,inp)
-            in
-                rules(Vs,Ms,Cs)
-            end *)
-        | ruleseval (Vs,Ms,value(x)::Cs)                              = ruleseval(value(x)::Vs,Ms,Cs)
-        | ruleseval (Vs,Ms,pointer(x,_)::Cs)                          = ruleseval(value(Array.sub(Ms,x))::Vs,Ms,Cs)
-        | ruleseval (Vs,Ms,EMPTYCOM::Cs)                              = (Vs,Ms,Cs)
-        (* | rules (Vs,Ms,SEQ::Cs)                                   = rules(Vs,Ms,Cs) *)
+    and ruleseval (Vs: V,Ms: M,Cs: C) =
+        (case FunStack.poptop Cs of
+          NONE => (Vs,Ms,Cs)
+        | SOME (commandpopped,xs) => (
+          case commandpopped of 
+             value(x) => ruleseval(FunStack.push(value(x),Vs),Ms,xs)
+            | PLUS  => let val (x,y,Vn) = get2val(Vs) in ruleseval(FunStack.push(value(x+y),Vn),Ms,xs) end
+            | MINUS => let val (x,y,Vn) = get2val(Vs) in ruleseval(FunStack.push(value(y-x),Vn),Ms,xs) end 
+            | TIMES => let val (x,y,Vn) = get2val(Vs) in ruleseval(FunStack.push(value(x*y),Vn),Ms,xs) end
+            | DIV   => let val (x,y,Vn) = get2val(Vs) in ruleseval(FunStack.push(value(y div x),Vn),Ms,xs) end
+            | MOD   => let val (x,y,Vn) = get2val(Vs) in ruleseval(FunStack.push(value(y mod x),Vn),Ms,xs) end
+            | EQ    => let val (x,y,Vn) = get2val(Vs) in if y =  x then ruleseval(FunStack.push(value(1),Vn),Ms,xs) else ruleseval(FunStack.push(value(0),Vn),Ms,xs) end
+            | NEQ   => let val (x,y,Vn) = get2val(Vs) in if y <> x then ruleseval(FunStack.push(value(1),Vn),Ms,xs) else ruleseval(FunStack.push(value(0),Vn),Ms,xs) end
+            | LT    => let val (x,y,Vn) = get2val(Vs) in if y <  x then ruleseval(FunStack.push(value(1),Vn),Ms,xs) else ruleseval(FunStack.push(value(0),Vn),Ms,xs) end
+            | GT    => let val (x,y,Vn) = get2val(Vs) in if y >  x then ruleseval(FunStack.push(value(1),Vn),Ms,xs) else ruleseval(FunStack.push(value(0),Vn),Ms,xs) end
+            | LEQ   => let val (x,y,Vn) = get2val(Vs) in if y <= x then ruleseval(FunStack.push(value(1),Vn),Ms,xs) else ruleseval(FunStack.push(value(0),Vn),Ms,xs) end
+            | GEQ   => let val (x,y,Vn) = get2val(Vs) in if y >= x then ruleseval(FunStack.push(value(1),Vn),Ms,xs) else ruleseval(FunStack.push(value(0),Vn),Ms,xs) end
+            | AND   => let val (x,y,Vn) = get2val(Vs) in if x <> 0 andalso y <> 0 then ruleseval(FunStack.push(value(1),Vn),Ms,xs) else ruleseval(FunStack.push(value(0),Vn),Ms,xs) end
+            | OR    => let val (x,y,Vn) = get2val(Vs) in if x <> 0 orelse y <> 0 then ruleseval(FunStack.push(value(1),Vn),Ms,xs) else ruleseval(FunStack.push(value(0),Vn),Ms,xs) end
+            | NEG   => let val SOME (value(x),Vn) =  FunStack.poptop(Vs) in ruleseval(FunStack.push(value(~1*x),Vn),Ms,xs) end
+            | NOT   => let val SOME (value(x),Vn) =  FunStack.poptop(Vs) in if  x = 0 then ruleseval(FunStack.push(value(1),Vn),Ms,xs) else ruleseval(FunStack.push(value(0),Vn),Ms,xs)   end
+            |pointer(a,_) => ruleseval(FunStack.push(value(Array.sub(Ms,a)),Vs),Ms,xs)
+            | EMPTYCOM => (Vs,Ms,xs)
+            | _ => raise Unmatched
+        )) 
+        handle Div => (print("Division by zero");([],Ms,[]))
+            |Unmatched => (print("Invalid expression");([],Ms,[]))
 
-        
         and getCommand([],count,left) =  (left,[])
           |getCommand(SEQ::xs,0,left) = getCommand(xs,0,left)
           |getCommand(x::xs,count,left) =
@@ -280,22 +270,7 @@ struct
         and executer (v,m,c) = 
           let
             val (ex,com_left) = (getCommand(c,0,[]))
-            (* val e = print("Strt\n")
-            val p = print(ComStackString(c))
-            val p = print(ComStackString(ex))
-            val d = print(ComStackString(com_left))
-            val f = print("ef\n") *)
-
-
-
-            (* val l = length ex
-            val com_left = FunStack.drop(com,l) *)
             val (valst,mem,con) = rules (v,m,ex)
-
-            (* val p = print(ComStackString(valst))
-            val p = print(ComStackString(con @ com_left))
-            val p = print("Done") *)
-
           in
             if con @ com_left <> [] then
               executer(valst,mem,con @ com_left)
@@ -340,7 +315,7 @@ struct
             val m: M = Array.array(maxMemSize,0)
             val c: C = ASTtoPostfix(AST)
           in
-            print(toString (executer (v , m ,c)))
+            executer (v , m ,c)
           end
 
 end (*Struct end *)
